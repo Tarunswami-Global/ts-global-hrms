@@ -97,7 +97,7 @@ def docx_to_pdf_word_com(docx_bytes):
             
         return pdf_bytes
     except Exception as e:
-        # Fallback 1: Direct PowerShell Word COM bridge
+        # Fallback 1: Direct PowerShell Word COM bridge (Windows)
         try:
             ps_cmd = f"$w = New-Object -ComObject Word.Application; $w.Visible = $false; $d = $w.Documents.Open('{temp_docx}'); $d.SaveAs('{temp_pdf}', 17); $d.Close(); $w.Quit()"
             res = subprocess.run(["powershell", "-NoProfile", "-Command", ps_cmd], capture_output=True, timeout=15)
@@ -111,7 +111,26 @@ def docx_to_pdf_word_com(docx_bytes):
                     pass
                 return pdf_bytes
         except Exception as ps_e:
-            print(f"PowerShell Word COM fallback failed: {ps_e}")
+            pass
+
+        # Fallback 2: LibreOffice / soffice for Linux & Cloud Containers (Streamlit Cloud)
+        try:
+            for lo_cmd in ["libreoffice", "soffice"]:
+                try:
+                    subprocess.run([lo_cmd, "--headless", "--convert-to", "pdf", "--outdir", temp_dir, temp_docx], capture_output=True, timeout=25)
+                    if os.path.exists(temp_pdf):
+                        with open(temp_pdf, "rb") as f:
+                            pdf_bytes = io.BytesIO(f.read())
+                        try:
+                            if os.path.exists(temp_docx): os.remove(temp_docx)
+                            if os.path.exists(temp_pdf): os.remove(temp_pdf)
+                        except Exception:
+                            pass
+                        return pdf_bytes
+                except Exception:
+                    continue
+        except Exception:
+            pass
             
         try:
             if os.path.exists(temp_docx): os.remove(temp_docx)
