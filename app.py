@@ -1,6 +1,6 @@
 import streamlit as st
 import os
-from automation.config import load_page_config, load_settings
+from automation.config import load_page_config, load_settings, ROLE_DEFINITIONS, load_users
 from automation.auth import check_authentication
 from automation.modules import (
     dashboard, 
@@ -38,9 +38,20 @@ sites_list = settings.get('sites', [
     "Other Client Site"
 ])
 
-# 5. Sidebar Navigation (Oilforce Solutions Style)
-personal_logo_path = "assets/ts_global_logo.webp"
-current_user = st.session_state.get('username', 'Admin')
+# 5. User Role & Security Context
+current_user = st.session_state.get('username', 'admin')
+current_role = st.session_state.get('user_role', 'super_admin')
+current_display_name = st.session_state.get('user_display_name', 'Tarun Swami')
+current_role_title = st.session_state.get('user_role_title', 'Super Administrator & MD')
+allowed_sites_list = st.session_state.get('allowed_sites', ['ALL'])
+
+role_info = ROLE_DEFINITIONS.get(current_role, ROLE_DEFINITIONS['super_admin'])
+allowed_nav = role_info.get('allowed_nav', [])
+badge_color = role_info.get('badge_color', '#DC2626')
+
+effective_sites = sites_list
+if allowed_sites_list and "ALL" not in allowed_sites_list:
+    effective_sites = [s for s in sites_list if s in allowed_sites_list] or sites_list
 
 with st.sidebar:
     # Brand Zone
@@ -57,7 +68,7 @@ with st.sidebar:
     st.write("")
     selected_site = st.selectbox(
         "🏢 Select Operating Site",
-        sites_list,
+        effective_sites,
         index=0
     )
     
@@ -66,21 +77,8 @@ with st.sidebar:
             Main Navigation
         </div>
     """, unsafe_allow_html=True)
-    
-    if 'nav_selection' not in st.session_state:
-        st.session_state['nav_selection'] = "🏠 Dashboard Overview"
 
-    # Query parameter support for direct navigation
-    q_nav = st.query_params.get("nav")
-    if q_nav:
-        if q_nav in ["master", "license"]:
-            st.session_state['nav_selection'] = "🛡️ Master License & Site Hub"
-        elif q_nav in ["monthly", "month"]:
-            st.session_state['nav_selection'] = "📊 Monthly Site Compliance Tracker"
-        elif q_nav in ["dashboard", "home"]:
-            st.session_state['nav_selection'] = "🏠 Dashboard Overview"
-
-    nav_buttons = [
+    nav_buttons_master = [
         ("🏠 Dashboard Overview", "🏠 Dashboard Overview"),
         ("🛡️ Master License & Site Hub", "🛡️ Master License & Site Hub"),
         ("📊 Monthly Site Compliance", "📊 Monthly Site Compliance Tracker"),
@@ -94,16 +92,51 @@ with st.sidebar:
         ("⚠️ 7. Disciplinary Notice", "⚠️ 7. Disciplinary & Warning Notice"),
     ]
 
-    current_target = st.session_state.get('nav_selection', "🏠 Dashboard Overview")
+    # Inner Security: Filter navigation buttons strictly by role permissions
+    visible_nav_buttons = [
+        (lbl, tgt) for (lbl, tgt) in nav_buttons_master
+        if lbl in allowed_nav
+    ]
+
+    if 'nav_selection' not in st.session_state:
+        st.session_state['nav_selection'] = visible_nav_buttons[0][1] if visible_nav_buttons else "🏠 Dashboard Overview"
+
+    # Query parameter support with role verification
+    q_nav = st.query_params.get("nav")
+    if q_nav:
+        q_target = None
+        if q_nav in ["master", "license"] and "🛡️ Master License & Site Hub" in allowed_nav:
+            q_target = "🛡️ Master License & Site Hub"
+        elif q_nav in ["monthly", "month"] and "📊 Monthly Site Compliance" in allowed_nav:
+            q_target = "📊 Monthly Site Compliance Tracker"
+        elif q_nav in ["dashboard", "home"]:
+            q_target = "🏠 Dashboard Overview"
+        elif q_nav in ["admin", "settings"] and current_role == "super_admin":
+            q_target = "⚙️ Admin Control Panel"
+        
+        if q_target:
+            st.session_state['nav_selection'] = q_target
+
+    current_target = st.session_state.get('nav_selection', visible_nav_buttons[0][1] if visible_nav_buttons else "🏠 Dashboard Overview")
+
+    # Safety: ensure current target is permitted for this role
+    valid_targets = [tgt for (_, tgt) in visible_nav_buttons]
+    if current_role == 'super_admin':
+        valid_targets.append("⚙️ Admin Control Panel")
+
+    if current_target not in valid_targets and visible_nav_buttons:
+        current_target = visible_nav_buttons[0][1]
+        st.session_state['nav_selection'] = current_target
     
-    for label, target in nav_buttons:
+    for label, target in visible_nav_buttons:
         is_active = (current_target == target)
         btn_type = "primary" if is_active else "secondary"
         if st.button(label, key=f"nav_{target}", type=btn_type, use_container_width=True):
             st.session_state['nav_selection'] = target
             st.rerun()
 
-    if current_user.lower() == 'admin':
+    # Administration (Restricted to Super Admin only)
+    if current_role == 'super_admin':
         st.markdown("""
             <div style="font-size: 10.5px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; color: #64748B; margin: 16px 0 6px 4px;">
                 Administration
@@ -135,10 +168,8 @@ with st.sidebar:
     
     st.write("")
     if st.button("🚪 Sign Out", use_container_width=True):
-        st.session_state['authenticated'] = False
-        st.session_state['username'] = ''
-        st.session_state['in_transition'] = False
-        st.session_state['pending_username'] = ''
+        st.session_state.clear()
+        st.query_params.clear()
         st.rerun()
 
 # 6. Modern Top Header Bar (Oilforce Solutions Style)
@@ -160,15 +191,16 @@ with col_h_left:
     """, unsafe_allow_html=True)
 
 with col_h_right:
+    user_initials = "".join([part[0] for part in current_display_name.split()[:2]]).upper() or "TS"
     st.markdown(f"""
         <div class="main-header" style="justify-content: flex-end; gap: 12px;">
             <div style="display: flex; align-items: center; gap: 10px;">
-                <div style="width: 36px; height: 36px; border-radius: 50%; background: #2563EB; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
-                    TS
+                <div style="width: 36px; height: 36px; border-radius: 50%; background: {badge_color}; color: #FFFFFF; display: flex; align-items: center; justify-content: center; font-weight: 800; font-size: 13px;">
+                    {user_initials}
                 </div>
                 <div style="line-height: 1.2;">
-                    <div style="font-size: 13px; font-weight: 700; color: #0F172A;">{owner_name}</div>
-                    <div style="font-size: 11px; color: #64748B;">{current_user.upper()} • Super Admin</div>
+                    <div style="font-size: 13px; font-weight: 700; color: #0F172A;">{current_display_name}</div>
+                    <div style="font-size: 10.5px; font-weight: 700; color: {badge_color};">{current_role_title}</div>
                 </div>
             </div>
         </div>
@@ -176,7 +208,12 @@ with col_h_right:
 
 st.write("")
 
-# 7. Module Routing
+# 7. Security Route Guard & Module Routing
+if portal_section not in valid_targets:
+    st.error(f"⛔ Access Denied! Your assigned role '{current_role_title}' does not have permission to access '{portal_section}'.")
+    st.info("Please select an authorized module from the sidebar.")
+    st.stop()
+
 if portal_section == "🏠 Dashboard Overview":
     dashboard.render(selected_site)
 elif portal_section == "🛡️ Master License & Site Hub":

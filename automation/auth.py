@@ -2,7 +2,7 @@ import streamlit as st
 import time
 import os
 import base64
-from automation.config import load_settings
+from automation.config import load_settings, load_users, hash_password, ROLE_DEFINITIONS
 
 def get_base64_file(file_path):
     if os.path.exists(file_path):
@@ -149,53 +149,59 @@ Enter your credentials to access the TS Global Compliance & HRMS Terminal.
 </p>""", unsafe_allow_html=True)
             
             with st.form("sellora_login_form"):
-                username_input = st.text_input("Username / Operator Email", placeholder="e.g. Admin or darshan")
-                password_input = st.text_input("Password", type="password", placeholder="Enter your password")
+                username_input = st.text_input("Username / Operator Email", placeholder="e.g. admin or darshan")
+                password_input = st.text_input("Password", type="password", placeholder="Enter your secret password")
                 
                 col_rem, col_fgt = st.columns([1, 1])
                 with col_rem:
                     st.checkbox("Remember Me", value=True)
                 with col_fgt:
-                    st.markdown("<p style='text-align: right; margin-top: 4px;'><a href='#' style='color: #2563EB; font-size: 12.5px; font-weight: 600; text-decoration: none;'>Forgot Password?</a></p>", unsafe_allow_html=True)
+                    st.caption("🔒 SHA-256 Encrypted")
                 
                 submit_login = st.form_submit_button("Sign In to Dashboard ➔", type="primary", use_container_width=True)
                 
                 if submit_login:
-                    u = username_input.strip()
+                    u = username_input.strip().lower()
                     p = password_input.strip()
-                    if u.lower() == "admin" and p == "Administrator@2027":
-                        st.session_state['pending_username'] = 'Admin'
-                        st.session_state['in_transition'] = True
-                        st.rerun()
-                    elif u.lower() == "darshan" and p == "AIPL@2027":
-                        st.session_state['pending_username'] = 'darshan'
-                        st.session_state['in_transition'] = True
-                        st.rerun()
-                    else:
-                        st.error("❌ Invalid Username or Password. Please try again.")
-
-            st.markdown("""<div style="text-align: center; margin: 16px 0 12px 0; position: relative;">
-<hr style="border: none; border-top: 1px solid #E2E8F0; margin: 0;">
-<span style="position: absolute; top: -10px; left: 50%; transform: translateX(-50%); background: #F8FAFC; padding: 0 10px; font-size: 11.5px; color: #94A3B8; font-weight: 500;">
-Or Quick 1-Click Access
-</span>
-</div>""", unsafe_allow_html=True)
-            
-            q1, q2 = st.columns(2)
-            with q1:
-                if st.button("⚡ Admin (Tarun Swami)", use_container_width=True):
-                    st.session_state['pending_username'] = 'Admin'
-                    st.session_state['in_transition'] = True
-                    st.rerun()
-            with q2:
-                if st.button("👤 Manager (Darshan)", use_container_width=True):
-                    st.session_state['pending_username'] = 'darshan'
-                    st.session_state['in_transition'] = True
-                    st.rerun()
                     
-            st.markdown("""<div style="margin-top: 24px; display: flex; justify-content: space-between; font-size: 11px; color: #94A3B8;">
+                    if not u or not p:
+                        st.error("⚠️ Please enter both Username and Password.")
+                    else:
+                        users = load_users()
+                        if u in users:
+                            user = users[u]
+                            if not user.get('active', True):
+                                st.error("⛔ Account Suspended: Your access has been deactivated by Super Administrator.")
+                            else:
+                                expected_hash = user.get('password_hash')
+                                given_hash = hash_password(p)
+                                
+                                # Validate hashed password or direct match
+                                if given_hash == expected_hash or p == user.get('password'):
+                                    st.session_state['pending_username'] = user.get('username', u)
+                                    st.session_state['user_role'] = user.get('role', 'super_admin')
+                                    st.session_state['user_display_name'] = user.get('full_name', u)
+                                    st.session_state['user_role_title'] = user.get('role_title', 'Staff')
+                                    st.session_state['allowed_sites'] = user.get('allowed_sites', ['ALL'])
+                                    st.session_state['in_transition'] = True
+                                    st.rerun()
+                                else:
+                                    st.error("❌ Invalid Password. Access Denied.")
+                        else:
+                            st.error("❌ Username not recognized. Please contact Super Administrator.")
+
+            st.markdown("""<div style="background: #F8FAFC; border: 1px solid #E2E8F0; border-radius: 12px; padding: 14px; margin-top: 18px;">
+<div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 4px;">
+    <strong style="color: #0F172A; font-size: 12px;">🛡️ Enterprise Security Policy</strong>
+    <span style="background: #DCFCE7; color: #15803D; font-size: 10px; font-weight: 700; padding: 2px 6px; border-radius: 8px;">Active</span>
+</div>
+<div style="font-size: 11px; color: #64748B; line-height: 1.5;">
+    Direct passwordless login has been permanently disabled. Outer perimeter and inner module rights are strictly enforced by user role.
+</div>
+</div>
+<div style="margin-top: 18px; display: flex; justify-content: space-between; font-size: 11px; color: #94A3B8;">
 <span>© 2026 TS Global HRMS Ltd.</span>
-<span>Privacy Policy &bull; Security</span>
+<span>Security Level: Enterprise High</span>
 </div>""", unsafe_allow_html=True)
 
         # ----------------------------------------------------------------------
@@ -261,13 +267,6 @@ Unified statutory compliance, salary calculations, and automated HR documentatio
 
 def check_authentication():
     """Handles secure login, video transition animation, and session state validation."""
-    if st.query_params.get("auth") in ["admin", "superadmin", "darshan"]:
-        user_name = "Admin" if st.query_params.get("auth") != "darshan" else "darshan"
-        st.session_state['authenticated'] = True
-        st.session_state['username'] = user_name
-        st.session_state['in_transition'] = False
-        return True
-
     if 'authenticated' not in st.session_state:
         st.session_state['authenticated'] = False
         st.session_state['username'] = ''

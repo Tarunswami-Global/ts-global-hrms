@@ -2,10 +2,105 @@ import streamlit as st
 import os
 import json
 import base64
+import hashlib
 
 SETTINGS_FILE = os.path.join("data", "settings.json")
 MASTER_REGISTRY_FILE = os.path.join("data", "master_registry.json")
 MONTHLY_COMPLIANCE_FILE = os.path.join("data", "monthly_compliance.json")
+USERS_FILE = os.path.join("data", "users.json")
+
+ROLE_DEFINITIONS = {
+    "super_admin": {
+        "title": "Super Administrator & MD",
+        "badge_color": "#DC2626",
+        "allowed_nav": [
+            "🏠 Dashboard Overview",
+            "🛡️ Master License & Site Hub",
+            "📊 Monthly Site Compliance",
+            "⚖️ Statutory Registers (Forms A-D)",
+            "📄 1. Salary Slip Generator",
+            "📝 2. Appointment Letter",
+            "📈 3. Salary Increment Letter",
+            "🤝 4. Joining Offer Letter",
+            "⭐ 5. Performance Review Letter",
+            "📜 6. Experience Certificate",
+            "⚠️ 7. Disciplinary Notice",
+            "⚙️ Admin Control Panel"
+        ]
+    },
+    "compliance_head": {
+        "title": "Site Compliance Head & In-Charge",
+        "badge_color": "#2563EB",
+        "allowed_nav": [
+            "🏠 Dashboard Overview",
+            "🛡️ Master License & Site Hub",
+            "📊 Monthly Site Compliance",
+            "⚖️ Statutory Registers (Forms A-D)",
+            "📄 1. Salary Slip Generator",
+            "📝 2. Appointment Letter",
+            "📜 6. Experience Certificate"
+        ]
+    },
+    "hr_manager": {
+        "title": "HR Operations Executive",
+        "badge_color": "#059669",
+        "allowed_nav": [
+            "🏠 Dashboard Overview",
+            "📄 1. Salary Slip Generator",
+            "📝 2. Appointment Letter",
+            "📈 3. Salary Increment Letter",
+            "🤝 4. Joining Offer Letter",
+            "⭐ 5. Performance Review Letter",
+            "📜 6. Experience Certificate",
+            "⚠️ 7. Disciplinary Notice"
+        ]
+    },
+    "site_supervisor": {
+        "title": "Site Supervisor & Timekeeper",
+        "badge_color": "#D97706",
+        "allowed_nav": [
+            "🏠 Dashboard Overview",
+            "📊 Monthly Site Compliance",
+            "⚖️ Statutory Registers (Forms A-D)"
+        ]
+    },
+    "auditor_readonly": {
+        "title": "Client Compliance Auditor (Read-Only)",
+        "badge_color": "#6B7280",
+        "allowed_nav": [
+            "🏠 Dashboard Overview",
+            "📊 Monthly Site Compliance",
+            "⚖️ Statutory Registers (Forms A-D)"
+        ]
+    }
+}
+
+def hash_password(password: str) -> str:
+    """Computes salted SHA-256 hash of a password."""
+    return hashlib.sha256(f"ts_salt_{password}".encode("utf-8")).hexdigest()
+
+def load_users():
+    """Loads all system users from persistent storage."""
+    os.makedirs("data", exist_ok=True)
+    if os.path.exists(USERS_FILE):
+        try:
+            with open(USERS_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading users: {e}")
+    return {}
+
+def save_users(users_data):
+    """Saves system users to persistent storage."""
+    os.makedirs("data", exist_ok=True)
+    try:
+        with open(USERS_FILE, "w", encoding="utf-8") as f:
+            json.dump(users_data, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving users: {e}")
+        return False
+
 
 DEFAULT_SETTINGS = {
     "establishment_name": "AAIKRUPA INFRATECH PVT. LTD.",

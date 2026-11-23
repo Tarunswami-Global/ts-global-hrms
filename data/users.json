@@ -1,0 +1,67 @@
+{
+  "admin": {
+    "username": "admin",
+    "password_hash": "d75435793730245abf04105f7ae5803580d23952f350fbd878a8796ed14a07f6",
+    "full_name": "Tarun Swami",
+    "role": "super_admin",
+    "role_title": "Super Administrator & MD",
+    "email": "tarun@aaikrupainfra.com",
+    "active": true,
+    "allowed_sites": [
+      "ALL"
+    ],
+    "created_at": "2026-11-23 12:00:00"
+  },
+  "darshan": {
+    "username": "darshan",
+    "password_hash": "a44ef30655680972342bbe19ec57efb973e106cb2eb55e783d3a9b7932d4fb44",
+    "full_name": "Darshan ",
+    "role": "compliance_head",
+    "role_title": "Site Compliance Head & In-Charge",
+    "email": "darshan@aaikrupainfra.com",
+    "active": true,
+    "allowed_sites": [
+      "ALL"
+    ],
+    "created_at": "2026-11-23 12:00:00"
+  },
+  "hr_ops": {
+    "username": "hr_ops",
+    "password_hash": "f496e0411325660cb924361893b0b98805e36cc46bc9df0456f6abd7715f83f9",
+    "full_name": "Pooja Sharma",
+    "role": "hr_manager",
+    "role_title": "HR Operations Executive",
+    "email": "hr@aaikrupainfra.com",
+    "active": true,
+    "allowed_sites": [
+      "ALL"
+    ],
+    "created_at": "2026-11-23 12:00:00"
+  },
+  "site_incharge": {
+    "username": "site_incharge",
+    "password_hash": "5ec54b8febf101d759ceb3df12317dae68e3368ee4b58e58249bcc45f9a23db1",
+    "full_name": "Manoj Solanki",
+    "role": "site_supervisor",
+    "role_title": "Adani MPL Site Supervisor",
+    "email": "manoj.site@aaikrupainfra.com",
+    "active": true,
+    "allowed_sites": [
+      "M/S. MUNDRA PETROCHEM LIMITED (Mundra)"
+    ],
+    "created_at": "2026-11-23 12:00:00"
+  },
+  "auditor": {
+    "username": "auditor",
+    "password_hash": "a358876723b60d4ea3aa265295b7cc2f8fe3f69d47752cb4560ac12ce7e62589",
+    "full_name": "Client Compliance Auditor",
+    "role": "auditor_readonly",
+    "role_title": "Principal Employer Auditor",
+    "email": "audit.compliance@adani.com",
+    "active": true,
+    "allowed_sites": [
+      "ALL"
+    ],
+    "created_at": "2026-11-23 12:00:00"
+  }
+}

@@ -1,12 +1,16 @@
 import streamlit as st
 import pandas as pd
 import os
-from automation.config import load_settings, save_settings
+from automation.config import load_settings, save_settings, load_users, save_users, hash_password, ROLE_DEFINITIONS
 
 def render():
     st.subheader("⚙️ Administrator Master Control Panel & Universal Settings")
     
-    if st.session_state.get('username') == 'Admin':
+    current_role = st.session_state.get('user_role', '')
+    current_user = st.session_state.get('username', '')
+    is_super_admin = (current_role == 'super_admin' or current_user.lower() == 'admin')
+    
+    if is_super_admin:
         st.markdown('<div class="success-box">✅ Welcome, Super Administrator. You have full global control over the TS Global HRMS Suite.</div>', unsafe_allow_html=True)
         
         # Persistent Storage Setup for Logos
@@ -112,12 +116,149 @@ def render():
                     st.rerun()
 
         with tab4:
-            st.markdown("### 🔒 User Access & Role-Based Control")
-            users_data = [
-                {"User ID": "Admin", "Role": "Super Administrator", "Status": "Active", "Module Access": "All Modules (Full Admin)", "Settings Control": "Enabled"},
-                {"User ID": "darshan", "Role": "Plant HR Associate", "Status": "Active", "Module Access": "Registers, Slips, Letters", "Settings Control": "Disabled"}
-            ]
-            st.dataframe(pd.DataFrame(users_data), use_container_width=True)
+            st.markdown("### 👥 User Accounts & Role-Based Access Control (RBAC)")
+            st.caption("Aap yahan se naye users create kar sakte hain, existing users ke passwords reset kar sakte hain, aur unke roles & module permissions define kar sakte hain:")
+            
+            # Role Matrix Summary Pills
+            st.markdown("""
+            <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-bottom: 16px;">
+                <div style="background: #FEE2E2; border: 1px solid #FCA5A5; color: #991B1B; padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700;">
+                    👑 Super Admin (Full Control)
+                </div>
+                <div style="background: #DBEAFE; border: 1px solid #93C5FD; color: #1E40AF; padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700;">
+                    🛡️ Compliance Head (Licenses & Billing)
+                </div>
+                <div style="background: #D1FAE5; border: 1px solid #6EE7B7; color: #065F46; padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700;">
+                    👥 HR Executive (Slips & Letters)
+                </div>
+                <div style="background: #FEF3C7; border: 1px solid #FCD34D; color: #92400E; padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700;">
+                    🏗️ Site Supervisor (Site Checklist)
+                </div>
+                <div style="background: #F3F4F6; border: 1px solid #D1D5DB; color: #374151; padding: 6px 12px; border-radius: 8px; font-size: 11.5px; font-weight: 700;">
+                    🔍 Client Auditor (Read-Only)
+                </div>
+            </div>
+            """, unsafe_allow_html=True)
+            
+            all_users = load_users()
+            sites_options = settings.get('sites', [])
+            role_keys = list(ROLE_DEFINITIONS.keys())
+            role_labels = [f"{k} — {ROLE_DEFINITIONS[k]['title']}" for k in role_keys]
+            
+            # 1. Existing Users Table
+            st.markdown("#### 📋 Active System Users Directory")
+            u_table_rows = []
+            for u_k, u_v in all_users.items():
+                r_key = u_v.get('role', 'hr_manager')
+                r_info = ROLE_DEFINITIONS.get(r_key, {})
+                st_badge = "🟢 Active" if u_v.get('active', True) else "🔴 Suspended"
+                allowed_s = ", ".join(u_v.get('allowed_sites', ['ALL']))
+                
+                u_table_rows.append({
+                    "Username": u_k,
+                    "Full Name": u_v.get('full_name', u_k),
+                    "Assigned Role": r_info.get('title', r_key),
+                    "Email Address": u_v.get('email', 'N/A'),
+                    "Account Status": st_badge,
+                    "Operating Sites": allowed_s
+                })
+            st.dataframe(pd.DataFrame(u_table_rows), use_container_width=True)
+            
+            st.write("")
+            col_u1, col_u2 = st.columns([1, 1], gap="large")
+            
+            # 2. Add New User Account Form
+            with col_u1:
+                st.markdown("#### ➕ Create New User Login")
+                with st.form("form_create_user_admin"):
+                    n_username = st.text_input("New Username (Login ID)", placeholder="e.g. rohan_hr or site_mundra")
+                    n_name = st.text_input("User Full Name", placeholder="e.g. Rohan Mehta")
+                    n_email = st.text_input("Official Email Address", placeholder="e.g. rohan@aaikrupainfra.com")
+                    
+                    sel_role_label = st.selectbox("Assign System Role", role_labels, index=2)
+                    n_role = role_keys[role_labels.index(sel_role_label)]
+                    
+                    c_pw1, c_pw2 = st.columns(2)
+                    with c_pw1:
+                        n_pw = st.text_input("Set Password", type="password", placeholder="Secret password")
+                    with c_pw2:
+                        n_pw_conf = st.text_input("Confirm Password", type="password", placeholder="Confirm password")
+                        
+                    sel_sites = st.multiselect("Allowed Site Operations", ["ALL"] + sites_options, default=["ALL"])
+                    n_active = st.checkbox("Active Account Immediately", value=True)
+                    
+                    btn_create_u = st.form_submit_button("➕ Create User Account", type="primary", use_container_width=True)
+                    if btn_create_u:
+                        clean_u = n_username.strip().lower()
+                        if not clean_u or not n_name.strip():
+                            st.error("Please provide both Username and Full Name.")
+                        elif clean_u in all_users:
+                            st.error(f"Username '{clean_u}' already exists! Choose another.")
+                        elif not n_pw or n_pw != n_pw_conf:
+                            st.error("Passwords do not match or are empty.")
+                        else:
+                            all_users[clean_u] = {
+                                "username": clean_u,
+                                "password_hash": hash_password(n_pw.strip()),
+                                "full_name": n_name.strip(),
+                                "role": n_role,
+                                "role_title": ROLE_DEFINITIONS[n_role]['title'],
+                                "email": n_email.strip(),
+                                "active": n_active,
+                                "allowed_sites": sel_sites if sel_sites else ["ALL"],
+                                "created_at": str(pd.Timestamp.now())[:19]
+                            }
+                            save_users(all_users)
+                            st.success(f"✅ User account '{clean_u}' created successfully with role '{ROLE_DEFINITIONS[n_role]['title']}'!")
+                            st.rerun()
+
+            # 3. Edit Existing User / Password Reset / Deactivate Form
+            with col_u2:
+                st.markdown("#### ✏️ Manage User, Role & Password Reset")
+                u_choices = list(all_users.keys())
+                sel_edit_u = st.selectbox("Select User Account to Modify", u_choices, index=0)
+                target_u_data = all_users[sel_edit_u]
+                
+                with st.form(f"form_edit_user_{sel_edit_u}"):
+                    e_name = st.text_input("Full Name", value=target_u_data.get('full_name', ''))
+                    e_email = st.text_input("Email", value=target_u_data.get('email', ''))
+                    
+                    cur_r = target_u_data.get('role', 'hr_manager')
+                    cur_r_idx = role_keys.index(cur_r) if cur_r in role_keys else 0
+                    e_role_label = st.selectbox("Change Role", role_labels, index=cur_r_idx)
+                    e_role = role_keys[role_labels.index(e_role_label)]
+                    
+                    st.caption("Leave password blank if you do not want to change it:")
+                    new_reset_pw = st.text_input("Reset Password (Optional)", type="password", placeholder="Enter new password to change")
+                    
+                    e_active = st.checkbox("Account Status: Active", value=target_u_data.get('active', True))
+                    
+                    btn_save_u = st.form_submit_button("💾 Save User Modifications", type="primary", use_container_width=True)
+                    if btn_save_u:
+                        target_u_data['full_name'] = e_name.strip()
+                        target_u_data['email'] = e_email.strip()
+                        target_u_data['role'] = e_role
+                        target_u_data['role_title'] = ROLE_DEFINITIONS[e_role]['title']
+                        target_u_data['active'] = e_active
+                        
+                        if new_reset_pw.strip():
+                            target_u_data['password_hash'] = hash_password(new_reset_pw.strip())
+                            
+                        save_users(all_users)
+                        st.success(f"✅ User account '{sel_edit_u}' successfully updated!")
+                        st.rerun()
+
+                # Delete User Button (with safety guard)
+                if sel_edit_u == 'admin':
+                    st.caption("🔒 Primary 'admin' super-administrator cannot be deleted.")
+                elif sel_edit_u == current_user.lower():
+                    st.caption("🔒 Cannot delete yourself while logged in.")
+                else:
+                    if st.button(f"🗑️ Delete Account '{sel_edit_u}'", type="secondary", key=f"btn_del_u_{sel_edit_u}"):
+                        del all_users[sel_edit_u]
+                        save_users(all_users)
+                        st.warning(f"Deleted user account '{sel_edit_u}'.")
+                        st.rerun()
 
         with tab5:
             st.markdown("### 📊 System Status & Feature Completion Tracker")
