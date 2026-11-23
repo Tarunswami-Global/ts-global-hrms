@@ -1,0 +1,269 @@
+{
+  "2026-11": {
+    "MPL-PIPE-01": {
+      "month": "2026-11",
+      "site_code": "MPL-PIPE-01",
+      "wages_disbursement": {
+        "status": "completed",
+        "bank_ref": "NEFT-HDFC-20261107-99120",
+        "date": "2026-11-07",
+        "amount": 2845000,
+        "notes": "Bank salary disbursed for 210 workers by 7th"
+      },
+      "wage_register_sign": {
+        "status": "completed",
+        "slips_count": 210,
+        "pe_signatory": "Mr. R. K. Varma (Head Contracts, Adani MPL)",
+        "date": "2026-11-09",
+        "notes": "Form XIX wage register signed and stamped by Adani PE"
+      },
+      "pf_ecr": {
+        "status": "completed",
+        "trrn": "1012611088912",
+        "amount": 341400,
+        "date": "2026-11-14",
+        "notes": "EPFO ECR filed and paid before 15th deadline"
+      },
+      "esic_challan": {
+        "status": "completed",
+        "challan_no": "03726110998811",
+        "amount": 113800,
+        "date": "2026-11-14",
+        "notes": "ESIC monthly return paid online"
+      },
+      "pt_challan": {
+        "status": "completed",
+        "challan_no": "GJ-PT-KUTCH-202611-441",
+        "amount": 42000,
+        "date": "2026-11-15",
+        "notes": "Gujarat Professional Tax deposited"
+      },
+      "lwf_wc": {
+        "status": "completed",
+        "policy_ref": "WC-NIA-2026-99482 (250 Workers Covered)",
+        "notes": "Active WC policy valid till Dec 2026"
+      },
+      "safety_tbt": {
+        "status": "completed",
+        "tbt_count": 26,
+        "incident_status": "Zero Incident (Nil)",
+        "notes": "Monthly HSE dossier certified by site safety officer"
+      },
+      "dossier_status": "approved",
+      "submitted_to_client": "2026-11-16",
+      "client_approval_status": "Bill Clearance Approved (Invoice Ready)"
+    },
+    "MPL-STRUC-02": {
+      "month": "2026-11",
+      "site_code": "MPL-STRUC-02",
+      "wages_disbursement": {
+        "status": "completed",
+        "bank_ref": "NEFT-ICICI-20261108-44112",
+        "date": "2026-11-08",
+        "amount": 1950000,
+        "notes": "Wages disbursed for 146 structural workers"
+      },
+      "wage_register_sign": {
+        "status": "completed",
+        "slips_count": 146,
+        "pe_signatory": "Mr. R. K. Varma (Adani MPL)",
+        "date": "2026-11-10",
+        "notes": "Countersigned by client PE"
+      },
+      "pf_ecr": {
+        "status": "completed",
+        "trrn": "1012611099231",
+        "amount": 234000,
+        "date": "2026-11-14",
+        "notes": "PF ECR challan paid"
+      },
+      "esic_challan": {
+        "status": "completed",
+        "challan_no": "03726110994451",
+        "amount": 78000,
+        "date": "2026-11-14",
+        "notes": "ESIC challan paid"
+      },
+      "pt_challan": {
+        "status": "completed",
+        "challan_no": "GJ-PT-KUTCH-202611-442",
+        "amount": 29200,
+        "date": "2026-11-15",
+        "notes": "Gujarat PT paid"
+      },
+      "lwf_wc": {
+        "status": "completed",
+        "policy_ref": "WC-HDFC-2026-1102 (150 Workers)",
+        "notes": "HDFC ERGO WC Policy valid"
+      },
+      "safety_tbt": {
+        "status": "completed",
+        "tbt_count": 25,
+        "incident_status": "Zero Incident",
+        "notes": "Toolbox talks verified"
+      },
+      "dossier_status": "approved",
+      "submitted_to_client": "2026-11-16",
+      "client_approval_status": "Bill Clearance Approved"
+    },
+    "LINDE-SOL-01": {
+      "month": "2026-11",
+      "site_code": "LINDE-SOL-01",
+      "wages_disbursement": {
+        "status": "completed",
+        "bank_ref": "NEFT-SBI-20261107-11992",
+        "date": "2026-11-07",
+        "amount": 1280000,
+        "notes": "Wages disbursed for 95 workers"
+      },
+      "wage_register_sign": {
+        "status": "pending_client",
+        "slips_count": 95,
+        "pe_signatory": "Mr. S. Banerjee (Linde India)",
+        "date": "",
+        "notes": "Submitted to Linde HR, signature pending"
+      },
+      "pf_ecr": {
+        "status": "completed",
+        "trrn": "1012611044819",
+        "amount": 153600,
+        "date": "2026-11-13",
+        "notes": "PF paid"
+      },
+      "esic_challan": {
+        "status": "completed",
+        "challan_no": "03726110881921",
+        "amount": 51200,
+        "date": "2026-11-13",
+        "notes": "ESIC paid"
+      },
+      "pt_challan": {
+        "status": "completed",
+        "challan_no": "GJ-PT-KUTCH-202611-443",
+        "amount": 19000,
+        "date": "2026-11-14",
+        "notes": "PT deposited"
+      },
+      "lwf_wc": {
+        "status": "completed",
+        "policy_ref": "WC-ICICI-2026-881",
+        "notes": "WC policy expiring 18-Dec-2026 (Renewal in process)"
+      },
+      "safety_tbt": {
+        "status": "completed",
+        "tbt_count": 24,
+        "incident_status": "Zero Incident",
+        "notes": "Safety audit cleared"
+      },
+      "dossier_status": "pending_review",
+      "submitted_to_client": "2026-11-15",
+      "client_approval_status": "Pending PE Register Counter-Signature"
+    },
+    "TATA-CGPL-01": {
+      "month": "2026-11",
+      "site_code": "TATA-CGPL-01",
+      "wages_disbursement": {
+        "status": "completed",
+        "bank_ref": "NEFT-HDFC-20261108-88129",
+        "date": "2026-11-08",
+        "amount": 1620000,
+        "notes": "Wages disbursed for 120 workers"
+      },
+      "wage_register_sign": {
+        "status": "completed",
+        "slips_count": 120,
+        "pe_signatory": "Mr. V. Patel (Tata Power CGPL)",
+        "date": "2026-11-10",
+        "notes": "Form XIX countersigned"
+      },
+      "pf_ecr": {
+        "status": "completed",
+        "trrn": "1012611077219",
+        "amount": 194400,
+        "date": "2026-11-14",
+        "notes": "PF paid"
+      },
+      "esic_challan": {
+        "status": "completed",
+        "challan_no": "03726110662918",
+        "amount": 64800,
+        "date": "2026-11-14",
+        "notes": "ESIC paid"
+      },
+      "pt_challan": {
+        "status": "completed",
+        "challan_no": "GJ-PT-KUTCH-202611-444",
+        "amount": 24000,
+        "date": "2026-11-15",
+        "notes": "PT deposited"
+      },
+      "lwf_wc": {
+        "status": "completed",
+        "policy_ref": "WC-TATA-2026-004",
+        "notes": "Tata AIG WC Policy valid"
+      },
+      "safety_tbt": {
+        "status": "completed",
+        "tbt_count": 26,
+        "incident_status": "Zero Incident",
+        "notes": "Power plant safety norms verified"
+      },
+      "dossier_status": "approved",
+      "submitted_to_client": "2026-11-16",
+      "client_approval_status": "Bill Clearance Approved"
+    },
+    "FAB-MUNDRA-00": {
+      "month": "2026-11",
+      "site_code": "FAB-MUNDRA-00",
+      "wages_disbursement": {
+        "status": "completed",
+        "bank_ref": "NEFT-SBI-20261107-33120",
+        "date": "2026-11-07",
+        "amount": 1080000,
+        "notes": "Wages disbursed for 80 workers"
+      },
+      "wage_register_sign": {
+        "status": "completed",
+        "slips_count": 80,
+        "pe_signatory": "Aaikrupa Central Yard In-Charge",
+        "date": "2026-11-09",
+        "notes": "Yard register verified"
+      },
+      "pf_ecr": {
+        "status": "completed",
+        "trrn": "1012611022198",
+        "amount": 129600,
+        "date": "2026-11-14",
+        "notes": "PF paid"
+      },
+      "esic_challan": {
+        "status": "completed",
+        "challan_no": "03726110118829",
+        "amount": 43200,
+        "date": "2026-11-14",
+        "notes": "ESIC paid"
+      },
+      "pt_challan": {
+        "status": "completed",
+        "challan_no": "GJ-PT-KUTCH-202611-445",
+        "amount": 16000,
+        "date": "2026-11-15",
+        "notes": "PT deposited"
+      },
+      "lwf_wc": {
+        "status": "action_required",
+        "policy_ref": "WC-BASE-2026-11 (Expired 20-Nov-2026)",
+        "notes": "Renewal policy endorsement pending from National Insurance"
+      },
+      "safety_tbt": {
+        "status": "completed",
+        "tbt_count": 22,
+        "incident_status": "Zero Incident",
+        "notes": "Fabrication yard safety protocol"
+      },
+      "dossier_status": "action_required",
+      "submitted_to_client": "2026-11-17",
+      "client_approval_status": "Hold — WC Policy Endorsement Required"
+    }
+  }
+}

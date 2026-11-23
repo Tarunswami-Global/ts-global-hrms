@@ -4,6 +4,8 @@ import json
 import base64
 
 SETTINGS_FILE = os.path.join("data", "settings.json")
+MASTER_REGISTRY_FILE = os.path.join("data", "master_registry.json")
+MONTHLY_COMPLIANCE_FILE = os.path.join("data", "monthly_compliance.json")
 
 DEFAULT_SETTINGS = {
     "establishment_name": "AAIKRUPA INFRATECH PVT. LTD.",
@@ -21,6 +23,51 @@ DEFAULT_SETTINGS = {
         "Other Client Site"
     ]
 }
+
+def load_master_registry():
+    """Loads master registry data containing entities, clients, POs, and sites."""
+    os.makedirs("data", exist_ok=True)
+    if os.path.exists(MASTER_REGISTRY_FILE):
+        try:
+            with open(MASTER_REGISTRY_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception as e:
+            print(f"Error loading master registry: {e}")
+            return {}
+    return {}
+
+def save_master_registry(data):
+    """Saves master registry data."""
+    os.makedirs("data", exist_ok=True)
+    try:
+        with open(MASTER_REGISTRY_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving master registry: {e}")
+        return False
+
+def load_monthly_compliance():
+    """Loads monthly compliance tracking records."""
+    os.makedirs("data", exist_ok=True)
+    if os.path.exists(MONTHLY_COMPLIANCE_FILE):
+        try:
+            with open(MONTHLY_COMPLIANCE_FILE, "r", encoding="utf-8") as f:
+                return json.load(f)
+        except Exception:
+            return {}
+    return {}
+
+def save_monthly_compliance(data):
+    """Saves monthly compliance tracking records."""
+    os.makedirs("data", exist_ok=True)
+    try:
+        with open(MONTHLY_COMPLIANCE_FILE, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+        return True
+    except Exception as e:
+        print(f"Error saving monthly compliance: {e}")
+        return False
 
 def load_settings():
     """Loads configuration from persistent JSON file or returns defaults."""

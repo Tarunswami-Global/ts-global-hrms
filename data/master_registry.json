@@ -1,0 +1,304 @@
+{
+  "entities": {
+    "AIPL": {
+      "id": "AIPL",
+      "name": "AAIKRUPA INFRATECH PVT. LTD.",
+      "cin": "U45201GJ2020PTC114920",
+      "gstin": "24AAYCA6871C1ZD",
+      "pf_code": "GJRJK1234567000",
+      "esic_code": "37000123450000001",
+      "address": "Shop No. 18, Ashok Vatika, Dhrab Road, Mundra, Kutch, Gujarat - 370421",
+      "signatory_name": "Darshan ",
+      "signatory_title": "Managing Director",
+      "logo_path": "assets/logos/entities/AIPL.png"
+    },
+    "ASHAPURA": {
+      "id": "ASHAPURA",
+      "name": "ASHAPURA ENTERPRISES / INFRATECH",
+      "cin": "U28112GJ2022PTC128441",
+      "gstin": "24AAFFA1234B1Z5",
+      "pf_code": "GJRJK7654321000",
+      "esic_code": "37000987650000001",
+      "address": "Opp. Old Port, Mundra, Kutch, Gujarat - 370421",
+      "signatory_name": "Tarun Swami",
+      "signatory_title": "Authorized Signatory",
+      "logo_path": "assets/logos/entities/ASHAPURA.png"
+    },
+    "PMT": {
+      "id": "PMT",
+      "name": "PM TRADERS",
+      "cin": "PROPRIETORSHIP",
+      "gstin": "24AABCP1122D1Z9",
+      "pf_code": "GJRJK1234567000",
+      "esic_code": "37000123450000001",
+      "address": "Plot 42, GIDC, Gandhidham, Kutch, Gujarat",
+      "signatory_name": "Tarun Swami",
+      "signatory_title": "Proprietor / Director",
+      "logo_path": "assets/logos/entities/PMT.png"
+    },
+    "GBBS": {
+      "id": "GBBS",
+      "name": "GBBS (GUJARAT BULK BARITE & SOLUTIONS)",
+      "cin": "U14200GJ2023PTC139881",
+      "gstin": "24AAAFG9988C1Z2",
+      "pf_code": "GJRJK1234567000",
+      "esic_code": "37000123450000001",
+      "address": "Port Road, Mundra, Kutch, Gujarat",
+      "signatory_name": "Tarun Swami",
+      "signatory_title": "Managing Director",
+      "logo_path": "assets/logos/entities/GBBS.png"
+    }
+  },
+  "clients": {
+    "LINDE": {
+      "id": "LINDE",
+      "name": "LINDE INDIA LIMITED",
+      "short_name": "Linde India",
+      "rc_no": "RC-LINDE-SOLAR-331",
+      "contact_person": "Mr. S. Banerjee (Project Compliance)",
+      "contact_email": "compliance.solar@linde.com",
+      "location": "Linde Industrial Complex, Mundra, Gujarat",
+      "logo_path": "assets/logos/clients/LINDE.png"
+    },
+    "TATA_CGPL": {
+      "id": "TATA_CGPL",
+      "name": "TATA POWER (COASTAL GUJARAT POWER LTD)",
+      "short_name": "Tata CGPL",
+      "rc_no": "RC-TATA-CGPL-552",
+      "contact_person": "Mr. V. Patel (Site HR & Compliance)",
+      "contact_email": "compliance.cgpl@tatapower.com",
+      "location": "Tunda-Wandh, Mandvi-Mundra Coastal Road, Kutch",
+      "logo_path": "assets/logos/clients/TATA_CGPL.png"
+    },
+    "JINDAL": {
+      "id": "JINDAL",
+      "name": "JINDAL POWER LIMITED",
+      "short_name": "Jindal Power",
+      "rc_no": "RC-JPL-MECH-044",
+      "contact_person": "Mr. A. Singh (Site Manager)",
+      "contact_email": "plant.jindal@jindalpower.com",
+      "location": "Thermal Power Plant Division, Kutch",
+      "logo_path": "assets/logos/clients/JINDAL.png"
+    },
+    "KCL": {
+      "id": "KCL",
+      "name": "KUTCH CHEMICALS DIVISION (KCL)",
+      "short_name": "KCL Division",
+      "rc_no": "RC-KCL-MINERAL-18",
+      "contact_person": "Mr. D. Joshi",
+      "contact_email": "hr@kutchminerals.com",
+      "location": "Industrial Area, Gandhidham-Mundra Road",
+      "logo_path": "assets/logos/clients/KCL.png"
+    },
+    "ADANI_MPL": {
+      "id": "ADANI_MPL",
+      "name": "M/S. MUNDRA PETROCHEM LIMITED (Adani Group)",
+      "short_name": "Adani MPL",
+      "rc_no": "RC-MUNDRA-PETRO-091",
+      "contact_person": "Mr. R. K. Varma (Head Contracts)",
+      "contact_email": "contracts.mpl@adani.com",
+      "location": "Adani Port SEZ, Mundra, Kutch, Gujarat - 370421",
+      "logo_path": "assets/logos/clients/ADANI_MPL.png"
+    }
+  },
+  "pos": {
+    "PO-ADANI-MPL-2026-881": {
+      "po_no": "PO-ADANI-MPL-2026-881",
+      "client_id": "ADANI_MPL",
+      "title": "Mechanical Piping, Structural Erection & Plant Expansion",
+      "valid_from": "2026-01-01",
+      "valid_till": "2026-12-31",
+      "allocated_headcount": 250
+    },
+    "PO-ADANI-STR-441": {
+      "po_no": "PO-ADANI-STR-441",
+      "client_id": "ADANI_MPL",
+      "title": "Structural Fabrication & Heavy Spooling Unit",
+      "valid_from": "2026-02-15",
+      "valid_till": "2027-03-31",
+      "allocated_headcount": 150
+    },
+    "LINDE-WO-2025-412": {
+      "po_no": "LINDE-WO-2025-412",
+      "client_id": "LINDE",
+      "title": "Solar Power Division & Gas Plant Maintenance Contract",
+      "valid_from": "2025-06-01",
+      "valid_till": "2026-12-31",
+      "allocated_headcount": 100
+    },
+    "TP-CGPL-2026-109": {
+      "po_no": "TP-CGPL-2026-109",
+      "client_id": "TATA_CGPL",
+      "title": "Boiler, Turbine Overhauling & Valve Servicing",
+      "valid_from": "2026-03-01",
+      "valid_till": "2027-02-28",
+      "allocated_headcount": 150
+    },
+    "YARD-BASE-2026": {
+      "po_no": "YARD-BASE-2026",
+      "client_id": "ADANI_MPL",
+      "title": "Central Spool Fabrication Yard & Logistics Base",
+      "valid_from": "2026-01-01",
+      "valid_till": "2028-12-31",
+      "allocated_headcount": 100
+    }
+  },
+  "sites": {
+    "MPL-PIPE-01": {
+      "site_code": "MPL-PIPE-01",
+      "site_name": "MPL Site \u2014 Mechanical Piping Division",
+      "entity_id": "AIPL",
+      "client_id": "ADANI_MPL",
+      "po_no": "PO-ADANI-MPL-2026-881",
+      "nature_of_work": "Mechanical Piping, Structural Erection & Testing",
+      "site_location": "Mundra Petrochem Complex, Adani Port SEZ, Mundra, Kutch, Gujarat - 370421",
+      "site_incharge": "Darshan Sir",
+      "labour_cap": 250,
+      "active_headcount": 210,
+      "form_v": {
+        "form_v_no": "ADANI-MPL-FV-2025-881",
+        "form_v_date": "2025-12-15",
+        "pe_cap": 250,
+        "issued_by": "Mr. R. K. Varma (Head Contracts, Adani MPL)"
+      },
+      "clra_license_no": "1199597230",
+      "clra_valid_till": "2027-11-23",
+      "clra_status": "active",
+      "clra_challan_ref": "",
+      "clra_amendments": [
+        {
+          "ref": "ORIGINAL",
+          "date": "2025-01-10",
+          "cap": 100
+        },
+        {
+          "ref": "AMEND-01 (Form VII)",
+          "date": "2025-08-14",
+          "cap": 250
+        }
+      ],
+      "clra_doc_file": "CLRA_Form_XXI_Stamped_1199597230.pdf",
+      "wc_policy_no": "WC-NIA-2026-99482",
+      "wc_insurer": "The New India Assurance Co. Ltd.",
+      "wc_valid_till": "2026-12-31",
+      "wc_coverage": "250 Workers (Medical & Disability Coverage Rs. 50 Lakhs)",
+      "wc_doc_file": "WC_Policy_Schedule_NIA_2026.pdf"
+    },
+    "MPL-STRUC-02": {
+      "site_code": "MPL-STRUC-02",
+      "site_name": "MPL Site \u2014 Structural Fabrication & Erection",
+      "entity_id": "ASHAPURA",
+      "client_id": "ADANI_MPL",
+      "po_no": "PO-ADANI-STR-441",
+      "nature_of_work": "Structural Fabrication & Heavy Spooling",
+      "site_location": "MPL Structural Yard, Adani Port SEZ, Mundra, Gujarat",
+      "site_incharge": "Darshan Sir",
+      "labour_cap": 150,
+      "active_headcount": 146,
+      "form_v": {
+        "form_v_no": "ADANI-MPL-FV-2026-441",
+        "form_v_date": "2026-02-01",
+        "pe_cap": 150,
+        "issued_by": "Mr. R. K. Varma (Head Contracts, Adani MPL)"
+      },
+      "clra_license_no": "CLRA-AIPL-STRUC-44",
+      "clra_valid_till": "2027-03-15",
+      "clra_status": "active",
+      "clra_challan_ref": "",
+      "clra_amendments": [],
+      "clra_doc_file": "CLRA_Form_XXI_Struc_44.pdf",
+      "wc_policy_no": "WC-HDFC-2026-1102",
+      "wc_insurer": "HDFC ERGO General Insurance",
+      "wc_valid_till": "2027-03-15",
+      "wc_coverage": "150 Workers (Comprehensive WC + CAR)",
+      "wc_doc_file": "WC_Endorsement_HDFC_1102.pdf"
+    },
+    "LINDE-SOL-01": {
+      "site_code": "LINDE-SOL-01",
+      "site_name": "Linde India \u2014 Solar Project Site",
+      "entity_id": "AIPL",
+      "client_id": "LINDE",
+      "po_no": "LINDE-WO-2025-412",
+      "nature_of_work": "Solar Power Division & Gas Plant Maintenance",
+      "site_location": "Linde Industrial Gas Complex, Mundra, Kutch",
+      "site_incharge": "Darshan Sir",
+      "labour_cap": 100,
+      "active_headcount": 95,
+      "form_v": {
+        "form_v_no": "LINDE-FV-2025-412",
+        "form_v_date": "2025-05-20",
+        "pe_cap": 100,
+        "issued_by": "Mr. S. Banerjee (Project Compliance, Linde)"
+      },
+      "clra_license_no": "CLRA-LINDE-99",
+      "clra_valid_till": "2026-12-18",
+      "clra_status": "expiring_soon",
+      "clra_challan_ref": "",
+      "clra_amendments": [],
+      "clra_doc_file": "CLRA_Form_XXI_Linde_99.pdf",
+      "wc_policy_no": "WC-ICICI-2026-881",
+      "wc_insurer": "ICICI Lombard General Insurance",
+      "wc_valid_till": "2026-12-18",
+      "wc_coverage": "100 Workers",
+      "wc_doc_file": "WC_Policy_Linde_ICICI.pdf"
+    },
+    "TATA-CGPL-01": {
+      "site_code": "TATA-CGPL-01",
+      "site_name": "Tata CGPL \u2014 Turbine & Boiler Overhauling",
+      "entity_id": "AIPL",
+      "client_id": "TATA_CGPL",
+      "po_no": "TP-CGPL-2026-109",
+      "nature_of_work": "Boiler, Turbine Overhauling & Valve Servicing",
+      "site_location": "Tata Power CGPL Plant, Tunda-Wandh, Mandvi-Mundra Road, Kutch",
+      "site_incharge": "Darshan Sir",
+      "labour_cap": 150,
+      "active_headcount": 120,
+      "form_v": {
+        "form_v_no": "TATA-CGPL-FV-2026-109",
+        "form_v_date": "2026-02-15",
+        "pe_cap": 150,
+        "issued_by": "Mr. V. Patel (Site HR & Compliance, Tata Power)"
+      },
+      "clra_license_no": "CLRA-TATA-441",
+      "clra_valid_till": "2027-02-28",
+      "clra_status": "active",
+      "clra_challan_ref": "",
+      "clra_amendments": [],
+      "clra_doc_file": "CLRA_Tata_CGPL_441.pdf",
+      "wc_policy_no": "WC-TATA-2026-004",
+      "wc_insurer": "Tata AIG General Insurance",
+      "wc_valid_till": "2027-02-28",
+      "wc_coverage": "150 Workers (Power Plant Hazard Cover)",
+      "wc_doc_file": "WC_Policy_TataAIG.pdf"
+    },
+    "FAB-MUNDRA-00": {
+      "site_code": "FAB-MUNDRA-00",
+      "site_name": "Central Fabrication Yard & Registered Base",
+      "entity_id": "AIPL",
+      "client_id": "ADANI_MPL",
+      "po_no": "YARD-BASE-2026",
+      "nature_of_work": "Central Spool Fabrication & Heavy Logistics",
+      "site_location": "Shop No. 18, Ashok Vatika, Dhrab Road, Mundra, Kutch, Gujarat - 370421",
+      "site_incharge": "Site Manager",
+      "labour_cap": 100,
+      "active_headcount": 80,
+      "form_v": {
+        "form_v_no": "INTERNAL-YARD-2026",
+        "form_v_date": "2026-01-01",
+        "pe_cap": 100,
+        "issued_by": "Aaikrupa Infratech Base Operations"
+      },
+      "clra_license_no": "DISH-KUTCH-88271",
+      "clra_valid_till": "2027-11-23",
+      "clra_status": "active",
+      "clra_challan_ref": "",
+      "clra_amendments": [],
+      "clra_doc_file": "DISH_Factory_License_88271.pdf",
+      "wc_policy_no": "WC-BASE-2026-11",
+      "wc_insurer": "National Insurance Co.",
+      "wc_valid_till": "2026-11-20",
+      "wc_coverage": "100 Workers",
+      "wc_doc_file": "WC_Base_Yard_National.pdf"
+    }
+  }
+}

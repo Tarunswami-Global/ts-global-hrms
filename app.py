@@ -4,6 +4,8 @@ from automation.config import load_page_config, load_settings
 from automation.auth import check_authentication
 from automation.modules import (
     dashboard, 
+    master_compliance,
+    monthly_compliance,
     compliance_hub, 
     admin_panel,
     salary_slip,
@@ -68,8 +70,20 @@ with st.sidebar:
     if 'nav_selection' not in st.session_state:
         st.session_state['nav_selection'] = "🏠 Dashboard Overview"
 
+    # Query parameter support for direct navigation
+    q_nav = st.query_params.get("nav")
+    if q_nav:
+        if q_nav in ["master", "license"]:
+            st.session_state['nav_selection'] = "🛡️ Master License & Site Hub"
+        elif q_nav in ["monthly", "month"]:
+            st.session_state['nav_selection'] = "📊 Monthly Site Compliance Tracker"
+        elif q_nav in ["dashboard", "home"]:
+            st.session_state['nav_selection'] = "🏠 Dashboard Overview"
+
     nav_buttons = [
         ("🏠 Dashboard Overview", "🏠 Dashboard Overview"),
+        ("🛡️ Master License & Site Hub", "🛡️ Master License & Site Hub"),
+        ("📊 Monthly Site Compliance", "📊 Monthly Site Compliance Tracker"),
         ("⚖️ Statutory Registers (Forms A-D)", "⚖️ Compliance Portal (Forms A-D & 18)"),
         ("📄 1. Salary Slip Generator", "📄 1. Salary Slip Generate"),
         ("📝 2. Appointment Letter", "📝 2. Appointment Generate"),
@@ -165,6 +179,10 @@ st.write("")
 # 7. Module Routing
 if portal_section == "🏠 Dashboard Overview":
     dashboard.render(selected_site)
+elif portal_section == "🛡️ Master License & Site Hub":
+    master_compliance.render()
+elif portal_section == "📊 Monthly Site Compliance Tracker":
+    monthly_compliance.render(selected_site)
 elif portal_section == "⚖️ Compliance Portal (Forms A-D & 18)":
     compliance_hub.render(selected_site)
 elif portal_section == "📄 1. Salary Slip Generate":
