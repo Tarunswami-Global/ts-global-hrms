@@ -1,5 +1,5 @@
 import streamlit as st
-from automation.config import load_settings
+from automation.config import load_settings, has_permission
 
 def render(selected_site):
     settings = load_settings()
@@ -28,6 +28,24 @@ def render(selected_site):
             </div>
         </div>
     """, unsafe_allow_html=True)
+
+    # Executive Director Presentation Cockpit Banner
+    if has_permission("can_view_director_cockpit"):
+        st.markdown(f"""
+            <div style="background: linear-gradient(135deg, #0F172A 0%, #1E293B 100%); border-radius: 12px; padding: 14px 22px; color: #FFFFFF; display: flex; align-items: center; justify-content: space-between; margin-bottom: 12px; border-left: 5px solid #F59E0B; box-shadow: 0 4px 12px rgba(15, 23, 42, 0.08);">
+                <div>
+                    <div style="font-size: 11px; text-transform: uppercase; letter-spacing: 1.2px; color: #F59E0B; font-weight: 800;">Executive Director & Boardroom Governance</div>
+                    <div style="font-size: 15px; font-weight: 700; color: #FFFFFF; margin-top: 2px;">👔 Managing Director Cockpit & Statutory Audit Guarantee</div>
+                </div>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    <span style="font-size: 11px; color: #CBD5E1; background: rgba(255,255,255,0.1); padding: 4px 10px; border-radius: 8px;">99.4% Lawful Rating</span>
+                </div>
+            </div>
+        """, unsafe_allow_html=True)
+        if st.button("👔 Open Executive Director Presentation Cockpit ➔", key="btn_dash_open_cockpit", type="primary", use_container_width=True):
+            st.session_state['nav_selection'] = "👔 Executive Director Cockpit"
+            st.rerun()
+        st.write("")
 
     # =========================================================================
     # ROW 1: TOP 4 KPI BENTO CARDS (OILFORCE SOLUTIONS STYLE)

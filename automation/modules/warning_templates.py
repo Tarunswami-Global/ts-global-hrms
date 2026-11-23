@@ -1,6 +1,6 @@
 import streamlit as st
 from datetime import datetime
-from automation.config import load_settings
+from automation.config import load_settings, has_permission, render_permission_guard
 from automation.utils.letter_generators import (
     generate_warning_docx, generate_warning_pdf
 )
@@ -114,35 +114,39 @@ def render(selected_site):
         """, unsafe_allow_html=True)
 
     st.markdown("### 📥 Download Notice")
-    b1, b2 = st.columns(2)
-    with b1:
-        if st.button("⚙️ Generate Word (.docx)", key="btn_warn_docx", type="primary", use_container_width=True):
-            docx_buf = generate_warning_docx(warn_data)
-            st.session_state['warn_docx_bytes'] = docx_buf.getvalue()
-            st.session_state['warn_docx_name'] = f"Warning_{emp_name.replace(' ', '_')}.docx"
-            st.success("✅ Word document generated!")
+    if not has_permission("can_issue_disciplinary_notices"):
+        render_permission_guard("can_issue_disciplinary_notices", "Issue Disciplinary & Show-Cause Notices")
+        st.info("ℹ️ Your role has read-only preview access. Issuing formal disciplinary memos or show-cause notices is restricted to HR Managers and Super Admins.")
+    else:
+        b1, b2 = st.columns(2)
+        with b1:
+            if st.button("⚙️ Generate Word (.docx)", key="btn_warn_docx", type="primary", use_container_width=True):
+                docx_buf = generate_warning_docx(warn_data)
+                st.session_state['warn_docx_bytes'] = docx_buf.getvalue()
+                st.session_state['warn_docx_name'] = f"Warning_{emp_name.replace(' ', '_')}.docx"
+                st.success("✅ Word document generated!")
 
-        if st.session_state.get('warn_docx_bytes'):
-            st.download_button(
-                "⬇️ Download Warning Notice (.docx)",
-                data=st.session_state['warn_docx_bytes'],
-                file_name=st.session_state['warn_docx_name'],
-                mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                use_container_width=True
-            )
+            if st.session_state.get('warn_docx_bytes'):
+                st.download_button(
+                    "⬇️ Download Warning Notice (.docx)",
+                    data=st.session_state['warn_docx_bytes'],
+                    file_name=st.session_state['warn_docx_name'],
+                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                    use_container_width=True
+                )
 
-    with b2:
-        if st.button("⚙️ Generate A4 PDF (.pdf)", key="btn_warn_pdf", use_container_width=True):
-            pdf_buf = generate_warning_pdf(warn_data)
-            st.session_state['warn_pdf_bytes'] = pdf_buf.getvalue()
-            st.session_state['warn_pdf_name'] = f"Warning_{emp_name.replace(' ', '_')}.pdf"
-            st.success("✅ PDF document generated!")
+        with b2:
+            if st.button("⚙️ Generate A4 PDF (.pdf)", key="btn_warn_pdf", type="primary", use_container_width=True):
+                pdf_buf = generate_warning_pdf(warn_data)
+                st.session_state['warn_pdf_bytes'] = pdf_buf.getvalue()
+                st.session_state['warn_pdf_name'] = f"Warning_{emp_name.replace(' ', '_')}.pdf"
+                st.success("✅ PDF document generated!")
 
-        if st.session_state.get('warn_pdf_bytes'):
-            st.download_button(
-                "⬇️ Download Warning Notice (.pdf)",
-                data=st.session_state['warn_pdf_bytes'],
-                file_name=st.session_state['warn_pdf_name'],
-                mime="application/pdf",
-                use_container_width=True
-            )
+            if st.session_state.get('warn_pdf_bytes'):
+                st.download_button(
+                    "⬇️ Download Warning Notice (.pdf)",
+                    data=st.session_state['warn_pdf_bytes'],
+                    file_name=st.session_state['warn_pdf_name'],
+                    mime="application/pdf",
+                    use_container_width=True
+                )

@@ -2,7 +2,14 @@ import streamlit as st
 import json
 import os
 import datetime
-from automation.config import load_master_registry, save_master_registry, get_base64_image
+import pandas as pd
+from automation.config import (
+    load_master_registry, 
+    save_master_registry, 
+    get_base64_image,
+    has_permission,
+    render_permission_guard
+)
 
 def get_logo_html(logo_path, default_text, max_height=48, max_width=140):
     if logo_path and os.path.exists(logo_path):
@@ -670,6 +677,24 @@ def render():
     # TAB 4: GROUP SUBSIDIARIES, CLIENTS & PO DIRECTORY
     elif selected_nav == tab_options[3]:
         st.markdown("### 🏢 Level 1 & 2: Group Entities, Clients & Client PO Directory")
+        
+        can_manage = has_permission("can_manage_master_licenses")
+        can_delete = has_permission("can_delete_master_entities")
+        
+        if not can_manage:
+            render_permission_guard("can_manage_master_licenses", "Manage Master Entities, Clients, POs & Licenses")
+            st.info("ℹ️ Your role is authorized to view master data in Read-Only mode. Registering new subsidiaries, modifying client records, or deleting work orders is restricted to Compliance Heads and Super Admins.")
+            
+            # Read-only summary tables
+            st.markdown("#### 🏢 Active Group Subsidiaries")
+            ent_summary = [{"Entity ID": k, "Legal Name": v.get('name'), "CIN": v.get('cin'), "GSTIN": v.get('gstin'), "PF Code": v.get('pf_code')} for k, v in reg.get('entities', {}).items()]
+            st.dataframe(pd.DataFrame(ent_summary), use_container_width=True)
+            
+            st.markdown("#### 🤝 Principal Employers (Clients)")
+            cl_summary = [{"Client ID": k, "Client Name": v.get('name'), "Short Name": v.get('short_name'), "RC Number": v.get('rc_no'), "Location": v.get('location')} for k, v in reg.get('clients', {}).items()]
+            st.dataframe(pd.DataFrame(cl_summary), use_container_width=True)
+            return
+
         st.caption("Aap yahan se kisi bhi company, client ya PO ko edit kar sakte hain ya galat ban gaya ho toh delete kar sakte hain:")
         
         sub_opts = [

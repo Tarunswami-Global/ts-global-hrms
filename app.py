@@ -4,6 +4,7 @@ from automation.config import load_page_config, load_settings, ROLE_DEFINITIONS,
 from automation.auth import check_authentication
 from automation.modules import (
     dashboard, 
+    director_cockpit,
     master_compliance,
     monthly_compliance,
     compliance_hub, 
@@ -80,6 +81,7 @@ with st.sidebar:
 
     nav_buttons_master = [
         ("🏠 Dashboard Overview", "🏠 Dashboard Overview"),
+        ("👔 Executive Director Cockpit", "👔 Executive Director Cockpit"),
         ("🛡️ Master License & Site Hub", "🛡️ Master License & Site Hub"),
         ("📊 Monthly Site Compliance", "📊 Monthly Site Compliance Tracker"),
         ("⚖️ Statutory Registers (Forms A-D)", "⚖️ Compliance Portal (Forms A-D & 18)"),
@@ -105,7 +107,9 @@ with st.sidebar:
     q_nav = st.query_params.get("nav")
     if q_nav:
         q_target = None
-        if q_nav in ["master", "license"] and "🛡️ Master License & Site Hub" in allowed_nav:
+        if q_nav in ["director", "cockpit", "board"] and "👔 Executive Director Cockpit" in allowed_nav:
+            q_target = "👔 Executive Director Cockpit"
+        elif q_nav in ["master", "license"] and "🛡️ Master License & Site Hub" in allowed_nav:
             q_target = "🛡️ Master License & Site Hub"
         elif q_nav in ["monthly", "month"] and "📊 Monthly Site Compliance" in allowed_nav:
             q_target = "📊 Monthly Site Compliance Tracker"
@@ -216,6 +220,8 @@ if portal_section not in valid_targets:
 
 if portal_section == "🏠 Dashboard Overview":
     dashboard.render(selected_site)
+elif portal_section == "👔 Executive Director Cockpit":
+    director_cockpit.render()
 elif portal_section == "🛡️ Master License & Site Hub":
     master_compliance.render()
 elif portal_section == "📊 Monthly Site Compliance Tracker":

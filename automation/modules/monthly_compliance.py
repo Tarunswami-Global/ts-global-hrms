@@ -2,7 +2,14 @@ import streamlit as st
 import json
 import os
 import datetime
-from automation.config import load_master_registry, load_monthly_compliance, save_monthly_compliance, get_base64_image
+from automation.config import (
+    load_master_registry, 
+    load_monthly_compliance, 
+    save_monthly_compliance, 
+    get_base64_image,
+    has_permission,
+    render_permission_guard
+)
 
 def get_logo_html(logo_path, default_text, max_height=52, max_width=150):
     if logo_path and os.path.exists(logo_path):
@@ -274,80 +281,107 @@ def render(selected_site_default="MPL-PIPE-01"):
         st.markdown("---")
         st.markdown("#### ✏️ Update Monthly Compliance Proofs & Challans")
         
-        with st.form("form_update_monthly_comp"):
-            c_ed1, c_ed2 = st.columns(2)
-            
-            with c_ed1:
-                st.markdown("##### 1. Wages & Wage Slips")
-                st_wages = st.selectbox("Bank Wage Disbursement Status", ["completed", "in_process", "pending"], index=["completed", "in_process", "pending"].index(site_rec.get('wages_disbursement', {}).get('status', 'pending')))
-                ref_wages = st.text_input("Bank NEFT / Salary Advice Ref", value=site_rec.get('wages_disbursement', {}).get('bank_ref', ''))
-                amt_wages = st.number_input("Total Disbursed Net Wages (₹)", value=int(site_rec.get('wages_disbursement', {}).get('amount', 0)))
-                dt_wages = st.date_input("Disbursement Date", value=today)
-
-                st.markdown("##### 2. Form XIX Signed Register")
-                st_f19 = st.selectbox("Form XIX PE Sign Status", ["completed", "pending_client", "pending"], index=["completed", "pending_client", "pending"].index(site_rec.get('wage_register_sign', {}).get('status', 'pending')))
-                pe_sign_name = st.text_input("PE Representative Name & Title", value=site_rec.get('wage_register_sign', {}).get('pe_signatory', ''))
-
-            with c_ed2:
-                st.markdown("##### 3. EPFO & ESIC Challans")
-                st_pf = st.selectbox("PF ECR Status", ["completed", "pending"], index=["completed", "pending"].index(site_rec.get('pf_ecr', {}).get('status', 'pending')))
-                trrn_pf = st.text_input("EPFO ECR TRRN Number", value=site_rec.get('pf_ecr', {}).get('trrn', ''))
-                amt_pf = st.number_input("PF Total Paid (₹)", value=int(site_rec.get('pf_ecr', {}).get('amount', 0)))
+        can_upload = has_permission("can_upload_compliance_challans")
+        can_approve = has_permission("can_approve_monthly_compliance")
+        
+        if not can_upload:
+            render_permission_guard("can_upload_compliance_challans", "Update Monthly Compliance Proofs & Challans")
+            st.info("ℹ️ Your role is authorized for read-only audit inspection. Compliance records, challans, and receipts can only be uploaded by Site Supervisors, Compliance Heads, or Super Admins.")
+        else:
+            with st.form("form_update_monthly_comp"):
+                c_ed1, c_ed2 = st.columns(2)
                 
-                st_esi = st.selectbox("ESIC Challan Status", ["completed", "pending"], index=["completed", "pending"].index(site_rec.get('esic_challan', {}).get('status', 'pending')))
-                ref_esi = st.text_input("ESIC Challan Reference No.", value=site_rec.get('esic_challan', {}).get('challan_no', ''))
-                amt_esi = st.number_input("ESIC Total Paid (₹)", value=int(site_rec.get('esic_challan', {}).get('amount', 0)))
+                with c_ed1:
+                    st.markdown("##### 1. Wages & Wage Slips")
+                    st_wages = st.selectbox("Bank Wage Disbursement Status", ["completed", "in_process", "pending"], index=["completed", "in_process", "pending"].index(site_rec.get('wages_disbursement', {}).get('status', 'pending')))
+                    ref_wages = st.text_input("Bank NEFT / Salary Advice Ref", value=site_rec.get('wages_disbursement', {}).get('bank_ref', ''))
+                    amt_wages = st.number_input("Total Disbursed Net Wages (₹)", value=int(site_rec.get('wages_disbursement', {}).get('amount', 0)))
+                    dt_wages = st.date_input("Disbursement Date", value=today)
 
-                st.markdown("##### 4. Professional Tax (PT)")
-                ref_pt = st.text_input("Gujarat PT Challan No.", value=site_rec.get('pt_challan', {}).get('challan_no', ''))
-                amt_pt = st.number_input("PT Deposited (₹)", value=int(site_rec.get('pt_challan', {}).get('amount', 0)))
+                    st.markdown("##### 2. Form XIX Signed Register")
+                    st_f19 = st.selectbox("Form XIX PE Sign Status", ["completed", "pending_client", "pending"], index=["completed", "pending_client", "pending"].index(site_rec.get('wage_register_sign', {}).get('status', 'pending')))
+                    pe_sign_name = st.text_input("PE Representative Name & Title", value=site_rec.get('wage_register_sign', {}).get('pe_signatory', ''))
 
-            st.write("")
-            st.markdown("##### 📎 Attach Statutory Challan Proof Document (PDF / Image)")
-            existing_doc = site_rec.get('attached_proof', '')
-            if existing_doc and os.path.exists(existing_doc):
-                st.caption(f"🟢 **Attached File:** `{os.path.basename(existing_doc)}`")
-            up_proof = st.file_uploader("Upload Signed Challan / Bank Statement Copy", type=['pdf', 'jpg', 'jpeg', 'png'], key=f"upl_proof_{sel_month}_{selected_site_code}")
+                with c_ed2:
+                    st.markdown("##### 3. EPFO & ESIC Challans")
+                    st_pf = st.selectbox("PF ECR Status", ["completed", "pending"], index=["completed", "pending"].index(site_rec.get('pf_ecr', {}).get('status', 'pending')))
+                    trrn_pf = st.text_input("EPFO ECR TRRN Number", value=site_rec.get('pf_ecr', {}).get('trrn', ''))
+                    amt_pf = st.number_input("PF Total Paid (₹)", value=int(site_rec.get('pf_ecr', {}).get('amount', 0)))
+                    
+                    st_esi = st.selectbox("ESIC Challan Status", ["completed", "pending"], index=["completed", "pending"].index(site_rec.get('esic_challan', {}).get('status', 'pending')))
+                    ref_esi = st.text_input("ESIC Challan Reference No.", value=site_rec.get('esic_challan', {}).get('challan_no', ''))
+                    amt_esi = st.number_input("ESIC Total Paid (₹)", value=int(site_rec.get('esic_challan', {}).get('amount', 0)))
 
-            save_comp_btn = st.form_submit_button("💾 Save Monthly Compliance Proofs", type="primary", use_container_width=True)
-            if save_comp_btn:
-                if up_proof:
-                    proof_dir = os.path.join("data", "challans", sel_month, selected_site_code)
-                    os.makedirs(proof_dir, exist_ok=True)
-                    p_path = os.path.join(proof_dir, up_proof.name)
-                    with open(p_path, "wb") as pf_out:
-                        pf_out.write(up_proof.getbuffer())
-                    site_rec['attached_proof'] = p_path
-                site_rec['wages_disbursement'].update({
-                    "status": st_wages,
-                    "bank_ref": ref_wages.strip(),
-                    "amount": int(amt_wages),
-                    "date": str(dt_wages)
-                })
-                site_rec['wage_register_sign'].update({
-                    "status": st_f19,
-                    "pe_signatory": pe_sign_name.strip()
-                })
-                site_rec['pf_ecr'].update({
-                    "status": st_pf,
-                    "trrn": trrn_pf.strip(),
-                    "amount": int(amt_pf),
-                    "date": str(today)
-                })
-                site_rec['esic_challan'].update({
-                    "status": st_esi,
-                    "challan_no": ref_esi.strip(),
-                    "amount": int(amt_esi),
-                    "date": str(today)
-                })
-                site_rec['pt_challan'].update({
-                    "status": "completed" if ref_pt.strip() else "pending",
-                    "challan_no": ref_pt.strip(),
-                    "amount": int(amt_pt)
-                })
-                save_monthly_compliance(comp_data)
-                st.success(f"✅ Compliance records for Site '{selected_site_code}' ({sel_month}) updated successfully!")
-                st.rerun()
+                    st.markdown("##### 4. Professional Tax (PT)")
+                    ref_pt = st.text_input("Gujarat PT Challan No.", value=site_rec.get('pt_challan', {}).get('challan_no', ''))
+                    amt_pt = st.number_input("PT Deposited (₹)", value=int(site_rec.get('pt_challan', {}).get('amount', 0)))
+
+                st.write("")
+                st.markdown("##### 📎 Attach Statutory Challan Proof Document (PDF / Image)")
+                existing_doc = site_rec.get('attached_proof', '')
+                if existing_doc and os.path.exists(existing_doc):
+                    st.caption(f"🟢 **Attached File:** `{os.path.basename(existing_doc)}`")
+                up_proof = st.file_uploader("Upload Signed Challan / Bank Statement Copy", type=['pdf', 'jpg', 'jpeg', 'png'], key=f"upl_proof_{sel_month}_{selected_site_code}")
+
+                # Executive Bill Clearance Sign-off Toggle (Restricted to can_approve_monthly_compliance)
+                st.markdown("##### 📑 Client Bill Clearance Sign-Off Authority")
+                if can_approve:
+                    cur_dossier_status = site_rec.get('dossier_status', 'in_progress')
+                    dossier_options = ["approved", "pending_review", "action_required", "in_progress"]
+                    dossier_labels = [
+                        "🟢 Bill Clearance Approved (All Proofs Certified)",
+                        "🟡 Pending Client PE Sign / Internal Audit",
+                        "🔴 Hold / Action Required (Challans Overdue)",
+                        "⚪ In Progress (Data Gathering)"
+                    ]
+                    cur_d_idx = dossier_options.index(cur_dossier_status) if cur_dossier_status in dossier_options else 3
+                    sel_d_label = st.selectbox("Official Dossier Clearance Sign-Off", dossier_labels, index=cur_d_idx)
+                    chosen_dossier_status = dossier_options[dossier_labels.index(sel_d_label)]
+                else:
+                    st.caption("🔒 *Dossier Clearance Approval is restricted to Compliance Head & Super Admin.*")
+                    chosen_dossier_status = site_rec.get('dossier_status', 'in_progress')
+
+                save_comp_btn = st.form_submit_button("💾 Save Monthly Compliance Proofs", type="primary", use_container_width=True)
+                if save_comp_btn:
+                    if up_proof:
+                        proof_dir = os.path.join("data", "challans", sel_month, selected_site_code)
+                        os.makedirs(proof_dir, exist_ok=True)
+                        p_path = os.path.join(proof_dir, up_proof.name)
+                        with open(p_path, "wb") as pf_out:
+                            pf_out.write(up_proof.getbuffer())
+                        site_rec['attached_proof'] = p_path
+                    site_rec['wages_disbursement'].update({
+                        "status": st_wages,
+                        "bank_ref": ref_wages.strip(),
+                        "amount": int(amt_wages),
+                        "date": str(dt_wages)
+                    })
+                    site_rec['wage_register_sign'].update({
+                        "status": st_f19,
+                        "pe_signatory": pe_sign_name.strip()
+                    })
+                    site_rec['pf_ecr'].update({
+                        "status": st_pf,
+                        "trrn": trrn_pf.strip(),
+                        "amount": int(amt_pf),
+                        "date": str(today)
+                    })
+                    site_rec['esic_challan'].update({
+                        "status": st_esi,
+                        "challan_no": ref_esi.strip(),
+                        "amount": int(amt_esi),
+                        "date": str(today)
+                    })
+                    site_rec['pt_challan'].update({
+                        "status": "completed" if ref_pt.strip() else "pending",
+                        "challan_no": ref_pt.strip(),
+                        "amount": int(amt_pt)
+                    })
+                    if can_approve:
+                        site_rec['dossier_status'] = chosen_dossier_status
+                    save_monthly_compliance(comp_data)
+                    st.success(f"✅ Compliance records for Site '{selected_site_code}' ({sel_month}) updated successfully!")
+                    st.rerun()
 
     # TAB 2: MULTI-SITE MONTHLY COMPARISON HEATMAP
     elif selected_m_tab == m_tab_options[1]:

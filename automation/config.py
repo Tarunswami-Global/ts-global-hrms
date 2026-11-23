@@ -15,6 +15,7 @@ ROLE_DEFINITIONS = {
         "badge_color": "#DC2626",
         "allowed_nav": [
             "🏠 Dashboard Overview",
+            "👔 Executive Director Cockpit",
             "🛡️ Master License & Site Hub",
             "📊 Monthly Site Compliance",
             "⚖️ Statutory Registers (Forms A-D)",
@@ -26,20 +27,51 @@ ROLE_DEFINITIONS = {
             "📜 6. Experience Certificate",
             "⚠️ 7. Disciplinary Notice",
             "⚙️ Admin Control Panel"
-        ]
+        ],
+        "permissions": {
+            "can_view_director_cockpit": True,
+            "can_generate_salary_slips": True,
+            "can_issue_appointment_letters": True,
+            "can_issue_offer_letters": True,
+            "can_issue_increment_letters": True,
+            "can_issue_experience_certificates": True,
+            "can_issue_disciplinary_notices": True,
+            "can_manage_master_licenses": True,
+            "can_delete_master_entities": True,
+            "can_approve_monthly_compliance": True,
+            "can_upload_compliance_challans": True,
+            "can_manage_statutory_registers": True,
+            "can_manage_users": True,
+        }
     },
     "compliance_head": {
         "title": "Site Compliance Head & In-Charge",
         "badge_color": "#2563EB",
         "allowed_nav": [
             "🏠 Dashboard Overview",
+            "👔 Executive Director Cockpit",
             "🛡️ Master License & Site Hub",
             "📊 Monthly Site Compliance",
             "⚖️ Statutory Registers (Forms A-D)",
             "📄 1. Salary Slip Generator",
             "📝 2. Appointment Letter",
             "📜 6. Experience Certificate"
-        ]
+        ],
+        "permissions": {
+            "can_view_director_cockpit": True,
+            "can_generate_salary_slips": True,
+            "can_issue_appointment_letters": True,
+            "can_issue_offer_letters": False,
+            "can_issue_increment_letters": False,
+            "can_issue_experience_certificates": True,
+            "can_issue_disciplinary_notices": False,
+            "can_manage_master_licenses": True,
+            "can_delete_master_entities": False,
+            "can_approve_monthly_compliance": True,
+            "can_upload_compliance_challans": True,
+            "can_manage_statutory_registers": True,
+            "can_manage_users": False,
+        }
     },
     "hr_manager": {
         "title": "HR Operations Executive",
@@ -53,7 +85,22 @@ ROLE_DEFINITIONS = {
             "⭐ 5. Performance Review Letter",
             "📜 6. Experience Certificate",
             "⚠️ 7. Disciplinary Notice"
-        ]
+        ],
+        "permissions": {
+            "can_view_director_cockpit": False,
+            "can_generate_salary_slips": True,
+            "can_issue_appointment_letters": True,
+            "can_issue_offer_letters": True,
+            "can_issue_increment_letters": True,
+            "can_issue_experience_certificates": True,
+            "can_issue_disciplinary_notices": True,
+            "can_manage_master_licenses": False,
+            "can_delete_master_entities": False,
+            "can_approve_monthly_compliance": False,
+            "can_upload_compliance_challans": False,
+            "can_manage_statutory_registers": False,
+            "can_manage_users": False,
+        }
     },
     "site_supervisor": {
         "title": "Site Supervisor & Timekeeper",
@@ -62,7 +109,22 @@ ROLE_DEFINITIONS = {
             "🏠 Dashboard Overview",
             "📊 Monthly Site Compliance",
             "⚖️ Statutory Registers (Forms A-D)"
-        ]
+        ],
+        "permissions": {
+            "can_view_director_cockpit": False,
+            "can_generate_salary_slips": False,
+            "can_issue_appointment_letters": False,
+            "can_issue_offer_letters": False,
+            "can_issue_increment_letters": False,
+            "can_issue_experience_certificates": False,
+            "can_issue_disciplinary_notices": False,
+            "can_manage_master_licenses": False,
+            "can_delete_master_entities": False,
+            "can_approve_monthly_compliance": False,
+            "can_upload_compliance_challans": True,
+            "can_manage_statutory_registers": True,
+            "can_manage_users": False,
+        }
     },
     "auditor_readonly": {
         "title": "Client Compliance Auditor (Read-Only)",
@@ -71,9 +133,75 @@ ROLE_DEFINITIONS = {
             "🏠 Dashboard Overview",
             "📊 Monthly Site Compliance",
             "⚖️ Statutory Registers (Forms A-D)"
-        ]
+        ],
+        "permissions": {
+            "can_view_director_cockpit": False,
+            "can_generate_salary_slips": False,
+            "can_issue_appointment_letters": False,
+            "can_issue_offer_letters": False,
+            "can_issue_increment_letters": False,
+            "can_issue_experience_certificates": False,
+            "can_issue_disciplinary_notices": False,
+            "can_manage_master_licenses": False,
+            "can_delete_master_entities": False,
+            "can_approve_monthly_compliance": False,
+            "can_upload_compliance_challans": False,
+            "can_manage_statutory_registers": False,
+            "can_manage_users": False,
+        }
     }
 }
+
+PERMISSION_LABELS = {
+    "can_view_director_cockpit": "Executive Director / Boardroom Cockpit",
+    "can_generate_salary_slips": "Form XIX Salary Slip Generation",
+    "can_issue_appointment_letters": "Appointment Letter Generation",
+    "can_issue_offer_letters": "Candidate Joining Offer Letters",
+    "can_issue_increment_letters": "Salary Increment Letters",
+    "can_issue_experience_certificates": "Experience Certificates",
+    "can_issue_disciplinary_notices": "Disciplinary & Warning Notices",
+    "can_manage_master_licenses": "Master Licenses, Sites & PO Management",
+    "can_delete_master_entities": "Delete Root Master Entities & Sites",
+    "can_approve_monthly_compliance": "Sign Form 21(4) & Approve Bill Release",
+    "can_upload_compliance_challans": "Upload Site Attendance & Challan Receipts",
+    "can_manage_statutory_registers": "Forms A-D Muster & Statutory Registers",
+    "can_manage_users": "Admin User Management & Role Assignment"
+}
+
+def has_permission(permission_key: str, role: str = None) -> bool:
+    """Checks whether the currently logged-in user or specified role has the requested permission."""
+    if not role:
+        role = st.session_state.get('user_role', 'auditor_readonly')
+    role_info = ROLE_DEFINITIONS.get(role, {})
+    permissions = role_info.get("permissions", {})
+    return permissions.get(permission_key, False)
+
+def render_permission_guard(permission_key: str, action_title: str = None) -> bool:
+    """Renders a visual read-only banner if the current user lacks the requested permission.
+    Returns True if user has permission, False otherwise."""
+    current_role = st.session_state.get('user_role', 'auditor_readonly')
+    role_title = st.session_state.get('user_role_title', ROLE_DEFINITIONS.get(current_role, {}).get('title', 'User'))
+    
+    if has_permission(permission_key, current_role):
+        return True
+    
+    label = action_title or PERMISSION_LABELS.get(permission_key, permission_key)
+    st.markdown(f"""
+        <div style="background: #F8FAFC; border-left: 4px solid #F59E0B; border: 1px solid #E2E8F0; padding: 12px 18px; border-radius: 10px; margin-bottom: 16px;">
+            <div style="display: flex; align-items: center; justify-content: space-between;">
+                <div>
+                    <strong style="color: #92400E; font-size: 13.5px;">🔒 Read-Only Inspection Mode ({role_title})</strong>
+                    <p style="margin: 3px 0 0 0; color: #64748B; font-size: 12px;">
+                        Your assigned role has read-only access for <b>{label}</b>. Document creation, modifications, and statutory sign-offs are restricted.
+                    </p>
+                </div>
+                <span style="background: #FEF3C7; color: #B45309; padding: 4px 12px; border-radius: 16px; font-weight: 700; font-size: 11px; border: 1px solid #FCD34D;">
+                    READ ONLY
+                </span>
+            </div>
+        </div>
+    """, unsafe_allow_html=True)
+    return False
 
 def hash_password(password: str) -> str:
     """Computes salted SHA-256 hash of a password."""
@@ -304,6 +432,17 @@ def load_page_config():
         }}
         p, label {{
             color: #334155;
+        }}
+
+        /* Cockpit Dark Banner Overrides */
+        .cockpit-header, .cockpit-header *, .cockpit-header div, .cockpit-header h1, .cockpit-header h2, .cockpit-header h3, .cockpit-header p, .cockpit-header span, .cockpit-header b {{
+            color: #FFFFFF !important;
+        }}
+        .cockpit-header .text-gold, .cockpit-header .text-gold * {{
+            color: #F59E0B !important;
+        }}
+        .cockpit-header .text-muted, .cockpit-header .text-muted * {{
+            color: #94A3B8 !important;
         }}
 
         /* Streamlit elements overrides */

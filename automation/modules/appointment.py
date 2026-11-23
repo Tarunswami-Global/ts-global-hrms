@@ -3,7 +3,7 @@ import io
 import textwrap
 import pandas as pd
 from datetime import datetime
-from automation.config import load_settings
+from automation.config import load_settings, has_permission, render_permission_guard
 from automation.utils.letter_generators import (
     generate_appointment_docx, 
     generate_appointment_pdf,
@@ -175,67 +175,71 @@ Date: ______________
             st.markdown(appt_preview_html, unsafe_allow_html=True)
 
         st.markdown("### 📥 Generate & Download Appointment Letter")
-        sc1, sc2, sc3 = st.columns(3)
+        if not has_permission("can_issue_appointment_letters"):
+            render_permission_guard("can_issue_appointment_letters", "Generate & Issue Appointment Letters")
+            st.info("ℹ️ Your role has read-only preview access. Issuing and generating official Appointment Contract Letters is restricted to HR Managers and Compliance Heads.")
+        else:
+            sc1, sc2, sc3 = st.columns(3)
 
-        # 1. PDF With Letterhead
-        with sc1:
-            st.markdown("#### 🏢 Digital Letterhead PDF")
-            st.caption("Complete letter with official header chevron banner & registered Mundra footer.")
-            if st.button("⚙️ Generate PDF (With Letterhead)", key="btn_s_appt_pdf_lh", type="primary", use_container_width=True):
-                with st.spinner("Rendering vector PDF with letterhead..."):
-                    pdf_lh_buf = generate_appointment_pdf(single_data, with_letterhead=True)
-                    st.session_state['s_appt_pdf_lh_bytes'] = pdf_lh_buf.getvalue()
-                    st.session_state['s_appt_pdf_lh_name'] = f"Appointment_{candidate_name.replace(' ', '_')}_WithLH.pdf"
-                    st.success("✅ Generated successfully!")
+            # 1. PDF With Letterhead
+            with sc1:
+                st.markdown("#### 🏢 Digital Letterhead PDF")
+                st.caption("Complete letter with official header chevron banner & registered Mundra footer.")
+                if st.button("⚙️ Generate PDF (With Letterhead)", key="btn_s_appt_pdf_lh", type="primary", use_container_width=True):
+                    with st.spinner("Rendering vector PDF with letterhead..."):
+                        pdf_lh_buf = generate_appointment_pdf(single_data, with_letterhead=True)
+                        st.session_state['s_appt_pdf_lh_bytes'] = pdf_lh_buf.getvalue()
+                        st.session_state['s_appt_pdf_lh_name'] = f"Appointment_{candidate_name.replace(' ', '_')}_WithLH.pdf"
+                        st.success("✅ Generated successfully!")
 
-            if st.session_state.get('s_appt_pdf_lh_bytes'):
-                st.download_button(
-                    "⬇️ Download PDF (With Letterhead)",
-                    data=st.session_state['s_appt_pdf_lh_bytes'],
-                    file_name=st.session_state['s_appt_pdf_lh_name'],
-                    mime="application/pdf",
-                    use_container_width=True
-                )
+                if st.session_state.get('s_appt_pdf_lh_bytes'):
+                    st.download_button(
+                        "⬇️ Download PDF (With Letterhead)",
+                        data=st.session_state['s_appt_pdf_lh_bytes'],
+                        file_name=st.session_state['s_appt_pdf_lh_name'],
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
 
-        # 2. PDF Without Letterhead (Pre-printed Paper)
-        with sc2:
-            st.markdown("#### 📄 Pre-Printed Paper PDF")
-            st.caption("Leaves exact 1.80\" top margin for feeding physical company letterhead stationery.")
-            if st.button("⚙️ Generate PDF (Plain / Without LH)", key="btn_s_appt_pdf_plain", use_container_width=True):
-                with st.spinner("Rendering vector PDF for pre-printed paper..."):
-                    pdf_plain_buf = generate_appointment_pdf(single_data, with_letterhead=False)
-                    st.session_state['s_appt_pdf_plain_bytes'] = pdf_plain_buf.getvalue()
-                    st.session_state['s_appt_pdf_plain_name'] = f"Appointment_{candidate_name.replace(' ', '_')}_Stationery.pdf"
-                    st.success("✅ Generated successfully!")
+            # 2. PDF Without Letterhead (Pre-printed Paper)
+            with sc2:
+                st.markdown("#### 📄 Pre-Printed Paper PDF")
+                st.caption("Leaves exact 1.80\" top margin for feeding physical company letterhead stationery.")
+                if st.button("⚙️ Generate PDF (Plain / Without LH)", key="btn_s_appt_pdf_plain", use_container_width=True):
+                    with st.spinner("Rendering vector PDF for pre-printed paper..."):
+                        pdf_plain_buf = generate_appointment_pdf(single_data, with_letterhead=False)
+                        st.session_state['s_appt_pdf_plain_bytes'] = pdf_plain_buf.getvalue()
+                        st.session_state['s_appt_pdf_plain_name'] = f"Appointment_{candidate_name.replace(' ', '_')}_Stationery.pdf"
+                        st.success("✅ Generated successfully!")
 
-            if st.session_state.get('s_appt_pdf_plain_bytes'):
-                st.download_button(
-                    "⬇️ Download PDF (Without Letterhead)",
-                    data=st.session_state['s_appt_pdf_plain_bytes'],
-                    file_name=st.session_state['s_appt_pdf_plain_name'],
-                    mime="application/pdf",
-                    use_container_width=True
-                )
+                if st.session_state.get('s_appt_pdf_plain_bytes'):
+                    st.download_button(
+                        "⬇️ Download PDF (Without Letterhead)",
+                        data=st.session_state['s_appt_pdf_plain_bytes'],
+                        file_name=st.session_state['s_appt_pdf_plain_name'],
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
 
-        # 3. Word Document (.docx)
-        with sc3:
-            st.markdown("#### 📝 Editable Word (.docx)")
-            st.caption("Native Aptos Narrow docx formatted to exact 1 A4 page specifications.")
-            if st.button("⚙️ Generate Word (.docx)", key="btn_s_appt_docx", use_container_width=True):
-                with st.spinner("Populating Word document..."):
-                    docx_buf = generate_appointment_docx(single_data, with_letterhead=True)
-                    st.session_state['s_appt_docx_bytes'] = docx_buf.getvalue()
-                    st.session_state['s_appt_docx_name'] = f"Appointment_{candidate_name.replace(' ', '_')}.docx"
-                    st.success("✅ Generated successfully!")
+            # 3. Word Document (.docx)
+            with sc3:
+                st.markdown("#### 📝 Editable Word (.docx)")
+                st.caption("Native Aptos Narrow docx formatted to exact 1 A4 page specifications.")
+                if st.button("⚙️ Generate Word (.docx)", key="btn_s_appt_docx", use_container_width=True):
+                    with st.spinner("Populating Word document..."):
+                        docx_buf = generate_appointment_docx(single_data, with_letterhead=True)
+                        st.session_state['s_appt_docx_bytes'] = docx_buf.getvalue()
+                        st.session_state['s_appt_docx_name'] = f"Appointment_{candidate_name.replace(' ', '_')}.docx"
+                        st.success("✅ Generated successfully!")
 
-            if st.session_state.get('s_appt_docx_bytes'):
-                st.download_button(
-                    "⬇️ Download Word Document (.docx)",
-                    data=st.session_state['s_appt_docx_bytes'],
-                    file_name=st.session_state['s_appt_docx_name'],
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    use_container_width=True
-                )
+                if st.session_state.get('s_appt_docx_bytes'):
+                    st.download_button(
+                        "⬇️ Download Word Document (.docx)",
+                        data=st.session_state['s_appt_docx_bytes'],
+                        file_name=st.session_state['s_appt_docx_name'],
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True
+                    )
 
     # -------------------------------------------------------------------------
     # TAB 2: BULK EXCEL UPLOAD

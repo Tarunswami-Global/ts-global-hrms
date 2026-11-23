@@ -4,7 +4,7 @@ import os
 import textwrap
 import pandas as pd
 from datetime import datetime, timedelta
-from automation.config import load_settings
+from automation.config import load_settings, has_permission, render_permission_guard
 from automation.utils.letter_generators import (
     generate_joining_offer_docx,
     generate_joining_offer_pdf,
@@ -321,7 +321,11 @@ Signature: __________________<br/>
             st.markdown(preview_html, unsafe_allow_html=True)
 
         st.markdown("### 📥 Generate & Download Joining Offer Letter")
-        b1, b2, b3 = st.columns(3)
+        if not has_permission("can_issue_offer_letters"):
+            render_permission_guard("can_issue_offer_letters", "Generate & Issue Candidate Joining Offer Letters")
+            st.info("ℹ️ Your role has read-only preview access. Issuing candidate joining offer letters is restricted to HR Managers and Super Admins.")
+        else:
+            b1, b2, b3 = st.columns(3)
 
         # 1. Letterhead PDF (With Header Artwork)
         with b1:

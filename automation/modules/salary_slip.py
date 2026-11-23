@@ -3,7 +3,7 @@ import pandas as pd
 import calendar
 import textwrap
 from datetime import datetime
-from automation.config import load_settings
+from automation.config import load_settings, has_permission, render_permission_guard
 from automation.utils.excel_helpers import clean_num, safe_get, format_doj, create_blank_template
 from automation.utils.letter_generators import (
     generate_salary_slip_docx, generate_salary_slip_pdf, num_to_words_inr
@@ -271,57 +271,61 @@ def render(selected_site):
             st.markdown(slip_preview_html, unsafe_allow_html=True)
 
         st.markdown("### 📥 Download Form XIX Salary Slip (Official 1-Page)")
-        b1, b2, b3 = st.columns(3)
-        with b1:
-            if st.button("🏢 PDF with Letterhead", key="btn_slip_pdf_lh", type="primary", use_container_width=True):
-                with st.spinner("Generating 1-Page PDF with Official Letterhead..."):
-                    buf_pdf_lh = generate_salary_slip_pdf(slip_data, with_letterhead=True)
-                    st.session_state['slip_pdf_lh'] = buf_pdf_lh.getvalue()
-                    st.session_state['slip_pdf_lh_name'] = f"FormXIX_SalarySlip_WithLetterhead_{emp_id}_{pay_month.replace(' ', '_')}.pdf"
-                    st.success("✅ PDF with Letterhead ready!")
-            
-            if st.session_state.get('slip_pdf_lh'):
-                st.download_button(
-                    "⬇️ Download PDF (With Letterhead)",
-                    data=st.session_state['slip_pdf_lh'],
-                    file_name=st.session_state['slip_pdf_lh_name'],
-                    mime="application/pdf",
-                    use_container_width=True
-                )
+        if not has_permission("can_generate_salary_slips"):
+            render_permission_guard("can_generate_salary_slips", "Generate & Issue Form XIX Salary Slips")
+            st.info("ℹ️ Your role is authorized to view wage computations in Read-Only mode. Generating signed PDF/Word salary slips is restricted to HR Managers and Super Admins.")
+        else:
+            b1, b2, b3 = st.columns(3)
+            with b1:
+                if st.button("🏢 PDF with Letterhead", key="btn_slip_pdf_lh", type="primary", use_container_width=True):
+                    with st.spinner("Generating 1-Page PDF with Official Letterhead..."):
+                        buf_pdf_lh = generate_salary_slip_pdf(slip_data, with_letterhead=True)
+                        st.session_state['slip_pdf_lh'] = buf_pdf_lh.getvalue()
+                        st.session_state['slip_pdf_lh_name'] = f"FormXIX_SalarySlip_WithLetterhead_{emp_id}_{pay_month.replace(' ', '_')}.pdf"
+                        st.success("✅ PDF with Letterhead ready!")
+                
+                if st.session_state.get('slip_pdf_lh'):
+                    st.download_button(
+                        "⬇️ Download PDF (With Letterhead)",
+                        data=st.session_state['slip_pdf_lh'],
+                        file_name=st.session_state['slip_pdf_lh_name'],
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
 
-        with b2:
-            if st.button("📄 PDF without Letterhead", key="btn_slip_pdf_plain", use_container_width=True):
-                with st.spinner("Generating 1-Page PDF for Pre-printed Stationery..."):
-                    buf_pdf_plain = generate_salary_slip_pdf(slip_data, with_letterhead=False)
-                    st.session_state['slip_pdf_plain'] = buf_pdf_plain.getvalue()
-                    st.session_state['slip_pdf_plain_name'] = f"FormXIX_SalarySlip_PlainStationery_{emp_id}_{pay_month.replace(' ', '_')}.pdf"
-                    st.success("✅ PDF for Pre-printed Stationery ready!")
-            
-            if st.session_state.get('slip_pdf_plain'):
-                st.download_button(
-                    "⬇️ Download PDF (Plain / Stationery)",
-                    data=st.session_state['slip_pdf_plain'],
-                    file_name=st.session_state['slip_pdf_plain_name'],
-                    mime="application/pdf",
-                    use_container_width=True
-                )
+            with b2:
+                if st.button("📄 PDF without Letterhead", key="btn_slip_pdf_plain", use_container_width=True):
+                    with st.spinner("Generating 1-Page PDF for Pre-printed Stationery..."):
+                        buf_pdf_plain = generate_salary_slip_pdf(slip_data, with_letterhead=False)
+                        st.session_state['slip_pdf_plain'] = buf_pdf_plain.getvalue()
+                        st.session_state['slip_pdf_plain_name'] = f"FormXIX_SalarySlip_PlainStationery_{emp_id}_{pay_month.replace(' ', '_')}.pdf"
+                        st.success("✅ PDF for Pre-printed Stationery ready!")
+                
+                if st.session_state.get('slip_pdf_plain'):
+                    st.download_button(
+                        "⬇️ Download PDF (Plain / Stationery)",
+                        data=st.session_state['slip_pdf_plain'],
+                        file_name=st.session_state['slip_pdf_plain_name'],
+                        mime="application/pdf",
+                        use_container_width=True
+                    )
 
-        with b3:
-            if st.button("📝 Word Document (.docx)", key="btn_slip_docx", use_container_width=True):
-                with st.spinner("Generating Word (.docx) Format..."):
-                    buf_docx = generate_salary_slip_docx(slip_data, with_letterhead=True)
-                    st.session_state['single_slip_docx'] = buf_docx.getvalue()
-                    st.session_state['single_slip_docx_name'] = f"FormXIX_SalarySlip_{emp_id}_{pay_month.replace(' ', '_')}.docx"
-                    st.success("✅ Official Word Wage Slip ready!")
-            
-            if st.session_state.get('single_slip_docx'):
-                st.download_button(
-                    "⬇️ Download Form XIX (.docx)",
-                    data=st.session_state['single_slip_docx'],
-                    file_name=st.session_state['single_slip_docx_name'],
-                    mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-                    use_container_width=True
-                )
+            with b3:
+                if st.button("📝 Word Document (.docx)", key="btn_slip_docx", use_container_width=True):
+                    with st.spinner("Generating Word (.docx) Format..."):
+                        buf_docx = generate_salary_slip_docx(slip_data, with_letterhead=True)
+                        st.session_state['single_slip_docx'] = buf_docx.getvalue()
+                        st.session_state['single_slip_docx_name'] = f"FormXIX_SalarySlip_{emp_id}_{pay_month.replace(' ', '_')}.docx"
+                        st.success("✅ Official Word Wage Slip ready!")
+                
+                if st.session_state.get('single_slip_docx'):
+                    st.download_button(
+                        "⬇️ Download Form XIX (.docx)",
+                        data=st.session_state['single_slip_docx'],
+                        file_name=st.session_state['single_slip_docx_name'],
+                        mime="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+                        use_container_width=True
+                    )
 
     with tab2:
         st.markdown("### 📂 Bulk Salary Slip Generation from Master Sheet")

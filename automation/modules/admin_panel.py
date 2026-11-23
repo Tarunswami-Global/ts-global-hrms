@@ -164,6 +164,92 @@ def render():
                 })
             st.dataframe(pd.DataFrame(u_table_rows), use_container_width=True)
             
+            with st.expander("🔐 View Role Action & Document Creation Rights Matrix ('Kon Kya Bna Skta Hai')", expanded=True):
+                st.caption("Central Governance Matrix: Granular CRUD & Document Generation Permissions across all 5 System Roles:")
+                perm_matrix_data = [
+                    {
+                        "Capability / Action Right": "1. 👔 Executive Director Cockpit",
+                        "Super Admin (MD)": "✅ Full Access",
+                        "Compliance Head": "✅ Presentation Ready",
+                        "HR Manager": "⛔ Hidden",
+                        "Site Supervisor": "⛔ Hidden",
+                        "Client Auditor": "⛔ Hidden"
+                    },
+                    {
+                        "Capability / Action Right": "2. 📄 Generate Form XIX Salary Slips",
+                        "Super Admin (MD)": "✅ Create & Issue",
+                        "Compliance Head": "✅ Verify & Issue",
+                        "HR Manager": "✅ Create & Issue",
+                        "Site Supervisor": "🔒 Read-Only",
+                        "Client Auditor": "🔒 Read-Only"
+                    },
+                    {
+                        "Capability / Action Right": "3. 📝 Issue Appointment Letters",
+                        "Super Admin (MD)": "✅ Issue & Sign",
+                        "Compliance Head": "✅ Issue & Sign",
+                        "HR Manager": "✅ Issue & Sign",
+                        "Site Supervisor": "⛔ Restricted",
+                        "Client Auditor": "⛔ Restricted"
+                    },
+                    {
+                        "Capability / Action Right": "4. 🤝 Candidate Joining Offer Letters",
+                        "Super Admin (MD)": "✅ Issue & Sign",
+                        "Compliance Head": "🔒 View Only",
+                        "HR Manager": "✅ Issue & Sign",
+                        "Site Supervisor": "⛔ Restricted",
+                        "Client Auditor": "⛔ Restricted"
+                    },
+                    {
+                        "Capability / Action Right": "5. 📈 Salary Increment Letters",
+                        "Super Admin (MD)": "✅ Issue & Sign",
+                        "Compliance Head": "🔒 View Only",
+                        "HR Manager": "✅ Issue & Sign",
+                        "Site Supervisor": "⛔ Restricted",
+                        "Client Auditor": "⛔ Restricted"
+                    },
+                    {
+                        "Capability / Action Right": "6. ⚠️ Issue Disciplinary & Warning Memos",
+                        "Super Admin (MD)": "✅ Issue Notice",
+                        "Compliance Head": "🔒 View Only",
+                        "HR Manager": "✅ Issue Notice",
+                        "Site Supervisor": "⛔ Restricted",
+                        "Client Auditor": "⛔ Restricted"
+                    },
+                    {
+                        "Capability / Action Right": "7. 🛡️ Master Licenses, Sites & POs CRUD",
+                        "Super Admin (MD)": "✅ Full Add/Edit/Del",
+                        "Compliance Head": "✅ Add & Renew (No Del)",
+                        "HR Manager": "🔒 Reference Only",
+                        "Site Supervisor": "🔒 Reference Only",
+                        "Client Auditor": "🔒 Reference Only"
+                    },
+                    {
+                        "Capability / Action Right": "8. 📑 Sign Form 21(4) & Approve Bill Clearance",
+                        "Super Admin (MD)": "✅ Authority to Approve",
+                        "Compliance Head": "✅ Authorized Sign-off",
+                        "HR Manager": "⛔ Restricted",
+                        "Site Supervisor": "⛔ Restricted",
+                        "Client Auditor": "🔒 View Audit Proofs"
+                    },
+                    {
+                        "Capability / Action Right": "9. 📎 Upload Challans & Site Muster",
+                        "Super Admin (MD)": "✅ Allowed",
+                        "Compliance Head": "✅ Allowed",
+                        "HR Manager": "⛔ Restricted",
+                        "Site Supervisor": "✅ Allowed (Site Level)",
+                        "Client Auditor": "🔒 Inspection Only"
+                    },
+                    {
+                        "Capability / Action Right": "10. ⚙️ User Creation & Role Assignment",
+                        "Super Admin (MD)": "✅ Full Control",
+                        "Compliance Head": "⛔ Restricted",
+                        "HR Manager": "⛔ Restricted",
+                        "Site Supervisor": "⛔ Restricted",
+                        "Client Auditor": "⛔ Restricted"
+                    }
+                ]
+                st.dataframe(pd.DataFrame(perm_matrix_data), use_container_width=True)
+
             st.write("")
             col_u1, col_u2 = st.columns([1, 1], gap="large")
             
