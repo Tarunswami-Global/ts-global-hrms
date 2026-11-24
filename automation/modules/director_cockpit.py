@@ -20,8 +20,8 @@ def render():
     settings = load_settings()
 
     est_name = settings.get('establishment_name', "AAIKRUPA INFRATECH PVT. LTD.")
-    managing_director = settings.get('signatory_name', "Tarun Swami")
-    md_title = settings.get('signatory_title', "Authorized Signatory / Managing Director")
+    managing_director = settings.get('signatory_name', "Karman Gadhvi")
+    md_title = settings.get('signatory_title', "Director")
     today_str = datetime.date.today().strftime("%d %B %Y")
 
     # Styling (Boardroom Executive Luxury & High Contrast Theme)
@@ -353,7 +353,7 @@ def render():
     </div>
     """, unsafe_allow_html=True)
 
-    st.caption("Yeh official 1-page boardroom summary Director Tarun Swami ya Board meeting me directly present ya download kiya ja sakta hai:")
+    st.caption("Yeh official 1-page boardroom summary Director Karman Gadhvi ya Board meeting me directly present ya download kiya ja sakta hai:")
 
     board_doc_html = f"""<!DOCTYPE html>
 <html>

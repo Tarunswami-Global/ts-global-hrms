@@ -4,6 +4,8 @@ import textwrap
 import pandas as pd
 from datetime import datetime
 from automation.config import load_settings, has_permission, render_permission_guard
+from automation.utils.ui_components import render_entity_site_selector, render_employee_selector_widget
+from automation.utils.employee_master import convert_offer_to_appointment
 from automation.utils.letter_generators import (
     generate_appointment_docx, 
     generate_appointment_pdf,
@@ -12,58 +14,19 @@ from automation.utils.letter_generators import (
 )
 
 def render(selected_site):
-    settings = load_settings()
-    default_est = settings.get('establishment_name', "AAIKRUPA INFRATECH PVT. LTD.")
-    default_addr = settings.get('company_address', "Mundra-Kachchh Highway, Mundra, Gujarat - 370421")
-    sig_name = settings.get('signatory_name', "Tarun Swami")
-    sig_title = settings.get('signatory_title', "Authorized Signatory / Managing Director")
-
     st.subheader("📝 Official Appointment Letter Generator")
 
     # =========================================================================
-    # GLOBAL SETTINGS: COMPANY & SITE SELECTION
+    # GLOBAL SETTINGS: COMPANY & SITE SELECTION (UNIFIED MASTER SELECTOR)
     # =========================================================================
-    st.markdown("### 🏢 Company & Work Site Configuration")
-    cfg_c1, cfg_c2 = st.columns(2)
-
-    with cfg_c1:
-        comp_choice = st.selectbox(
-            "Select Issuing Company Entity",
-            [
-                "AAIKRUPA INFRATECH PVT. LTD.",
-                "ASHAPURA INFRATECH",
-                "ASHAPURA ENTERPRISE",
-                "➕ Custom Company Name"
-            ],
-            index=0,
-            key="appt_comp_choice"
-        )
-        if comp_choice == "➕ Custom Company Name":
-            est_name = st.text_input("Enter Company Full Name", value="ASHAPURA INFRATECH", key="appt_custom_comp")
-        else:
-            est_name = comp_choice
-
-        comp_addr = st.text_input("Company Address (For Header / Footer)", value=default_addr, key="appt_comp_addr")
-
-    with cfg_c2:
-        site_choice = st.selectbox(
-            "Select Operating Project Site",
-            [
-                selected_site,
-                "M/S. Mundra Petrochem Limited (MPL Piping 250)",
-                "M/S. Mundra Petrochem Limited (MPL Struct 250)",
-                "Adani New Industries Ltd. (ANIL Project Site)",
-                "Tata Projects / Linde India Project Site",
-                "Central Fabrication Yard (Mundra)",
-                "➕ Custom Work Site / Location"
-            ],
-            index=0,
-            key="appt_site_choice"
-        )
-        if site_choice == "➕ Custom Work Site / Location":
-            site_loc = st.text_input("Enter Project Site Name", value=selected_site, key="appt_custom_site")
-        else:
-            site_loc = site_choice
+    sel_config = render_entity_site_selector(key_prefix="appt", selected_site_default=selected_site)
+    est_name = sel_config["company_name"]
+    comp_addr = sel_config["company_address"]
+    sig_name = sel_config["signatory_name"]
+    sig_title = sel_config["signatory_title"]
+    site_loc = sel_config["site_location"]
+    selected_site_code = sel_config["site_code"]
+    entity_id = sel_config["entity_id"]
 
     st.markdown("---")
 
@@ -79,17 +42,28 @@ def render(selected_site):
     # TAB 1: SINGLE CANDIDATE
     # -------------------------------------------------------------------------
     with tab_single:
+        # Correlation Dropdown: Pick from Offered Candidates or Active Master
+        picked_emp = render_employee_selector_widget(filter_status=["offered", "active"], key_prefix="appt")
+        if picked_emp:
+            st.info(f"⚡ Loaded details for **{picked_emp.get('name')}** (Status: **{picked_emp.get('status', 'offered').upper()}**). Modifying or generating appointment will automatically activate this worker.")
+
+        def_name = picked_emp.get("name", "NAVEEN KUMAR MISHRA") if picked_emp else "NAVEEN KUMAR MISHRA"
+        def_code = picked_emp.get("punch_id", picked_emp.get("emp_id", "8300013436")) if picked_emp else "8300013436"
+        def_desig = picked_emp.get("designation", "FITTER") if picked_emp else "FITTER"
+        def_doj = picked_emp.get("doj", datetime.today().strftime('%d/%m/%Y')) if picked_emp else datetime.today().strftime('%d/%m/%Y')
+        def_sal = float(picked_emp.get("gross_salary", 30000.0)) if picked_emp else 30000.0
+
         st.markdown("#### 📋 Fill Candidate Appointment Details")
         c1, c2 = st.columns(2)
         with c1:
             letter_date = st.text_input("Issue Date", value=datetime.today().strftime('%d/%m/%Y'), key="s_appt_date")
-            candidate_name = st.text_input("Candidate Full Name", value="NAVEEN KUMAR MISHRA", key="s_appt_name")
-            emp_code = st.text_input("Employee Code (Punch ID / Gate Pass No.)", value="8300013436", key="s_appt_code")
-            designation = st.text_input("Designation / Role", value="FITTER", key="s_appt_desig")
+            candidate_name = st.text_input("Candidate Full Name", value=def_name, key="s_appt_name")
+            emp_code = st.text_input("Employee Code (Punch ID / Gate Pass No.)", value=def_code, key="s_appt_code")
+            designation = st.text_input("Designation / Role", value=def_desig, key="s_appt_desig")
 
         with c2:
-            doj = st.text_input("Effective Date of Joining (DOJ)", value=datetime.today().strftime('%d/%m/%Y'), key="s_appt_doj")
-            monthly_sal = st.number_input("Gross Monthly Salary (₹)", min_value=5000.0, value=30000.0, step=1000.0, key="s_appt_sal")
+            doj = st.text_input("Effective Date of Joining (DOJ)", value=def_doj, key="s_appt_doj")
+            monthly_sal = st.number_input("Gross Monthly Salary (₹)", min_value=5000.0, value=def_sal, step=1000.0, key="s_appt_sal")
             notice_days = st.number_input("Termination Notice Period (Days)", min_value=15, max_value=90, value=60, step=15, key="s_appt_notice")
 
         single_data = {
@@ -187,10 +161,24 @@ Date: ______________
                 st.caption("Complete letter with official header chevron banner & registered Mundra footer.")
                 if st.button("⚙️ Generate PDF (With Letterhead)", key="btn_s_appt_pdf_lh", type="primary", use_container_width=True):
                     with st.spinner("Rendering vector PDF with letterhead..."):
+                        # Auto-sync to Central Master
+                        target_id = picked_emp.get("emp_id") if picked_emp else f"EMP-{emp_code}"
+                        convert_offer_to_appointment(target_id, {
+                            "candidate_name": candidate_name,
+                            "emp_code": emp_code,
+                            "designation": designation,
+                            "entity_id": entity_id,
+                            "site_code": selected_site_code,
+                            "site_location": site_loc,
+                            "doj": doj,
+                            "gross_salary": monthly_sal,
+                            "notice_period": notice_days,
+                            "date": letter_date
+                        })
                         pdf_lh_buf = generate_appointment_pdf(single_data, with_letterhead=True)
                         st.session_state['s_appt_pdf_lh_bytes'] = pdf_lh_buf.getvalue()
                         st.session_state['s_appt_pdf_lh_name'] = f"Appointment_{candidate_name.replace(' ', '_')}_WithLH.pdf"
-                        st.success("✅ Generated successfully!")
+                        st.success("✅ Generated successfully & worker activated in Central Master!")
 
                 if st.session_state.get('s_appt_pdf_lh_bytes'):
                     st.download_button(

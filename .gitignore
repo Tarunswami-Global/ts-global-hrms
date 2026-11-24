@@ -45,3 +45,6 @@ $RECYCLE.BIN/
 # Office Temp Files
 ~$*.docx
 ~$*.xlsx
+
+# Local Codebase Backups
+backup_*/

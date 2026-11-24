@@ -6,6 +6,8 @@ import calendar
 import pandas as pd
 from datetime import datetime
 from automation.config import load_settings
+from automation.utils.ui_components import render_entity_site_selector, render_employee_selector_widget
+from automation.utils.employee_master import update_employee_salary
 from automation.utils.letter_generators import (
     generate_increment_docx,
     generate_increment_pdf,
@@ -64,57 +66,18 @@ def calculate_service_length(doj_str, letter_date_str):
     return "2 Years"
 
 def render(selected_site):
-    settings = load_settings()
-    default_est = settings.get('establishment_name', "AAIKRUPA INFRATECH PVT. LTD.")
-    default_addr = settings.get('company_address', "Shop No. 18, Ashok Vatika, Dhrab, Mundra, Kutch, Gujarat - 370421")
-    sig_name = settings.get('signatory_name', "Tarun Swami")
-    sig_title = settings.get('signatory_title', "Authorized Signatory / Managing Director")
-
     st.subheader("📈 Official Salary Increment & Appraisal Letter Generator")
 
     # =========================================================================
-    # GLOBAL SETTINGS: COMPANY & SITE SELECTION
+    # GLOBAL SETTINGS: COMPANY & SITE SELECTION (UNIFIED MASTER SELECTOR)
     # =========================================================================
-    st.markdown("### 🏢 Company & Work Site Configuration")
-    cfg_c1, cfg_c2 = st.columns(2)
-
-    with cfg_c1:
-        comp_choice = st.selectbox(
-            "Select Issuing Company Entity",
-            [
-                "AAIKRUPA INFRATECH PVT. LTD.",
-                "ASHAPURA INFRATECH",
-                "ASHAPURA ENTERPRISE",
-                "➕ Custom Company Name"
-            ],
-            index=0,
-            key="inc_comp_choice"
-        )
-        if comp_choice == "➕ Custom Company Name":
-            est_name = st.text_input("Enter Company Full Name", value="ASHAPURA INFRATECH", key="inc_custom_comp")
-        else:
-            est_name = comp_choice
-
-        comp_addr = st.text_input("Company Address (For Header / Footer)", value=default_addr, key="inc_comp_addr")
-
-    with cfg_c2:
-        site_choice = st.selectbox(
-            "Select Operating Project Site",
-            [
-                "M/S. MUNDRA PETROCHEM LIMITED (MPL Piping 250)",
-                "M/S. MUNDRA PETROCHEM LIMITED (MPL Struct 250)",
-                "ADANI NEW INDUSTRIES LTD. (ANIL Project Site)",
-                "TATA PROJECTS / LINDE INDIA SITE",
-                "CENTRAL FABRICATION YARD (Mundra)",
-                "➕ Custom Site / Work Location"
-            ],
-            index=0 if "MUNDRA" in selected_site.upper() else 2,
-            key="inc_site_choice"
-        )
-        if site_choice == "➕ Custom Site / Work Location":
-            site_loc = st.text_input("Enter Work Site / Location", value=selected_site, key="inc_custom_site")
-        else:
-            site_loc = site_choice
+    sel_config = render_entity_site_selector(key_prefix="inc", selected_site_default=selected_site)
+    est_name = sel_config["company_name"]
+    comp_addr = sel_config["company_address"]
+    sig_name = sel_config["signatory_name"]
+    sig_title = sel_config["signatory_title"]
+    site_loc = sel_config["site_location"]
+    selected_site_code = sel_config["site_code"]
 
     st.markdown("---")
 
@@ -130,19 +93,31 @@ def render(selected_site):
     # TAB 1: SINGLE EMPLOYEE INCREMENT LETTER
     # -------------------------------------------------------------------------
     with tab1:
+        # Fast-Fill Correlation from Employee Master
+        picked_emp = render_employee_selector_widget(filter_status=["active", "confirmed"], key_prefix="inc")
+        if picked_emp:
+            st.info(f"⚡ Loaded employee from Master: **{picked_emp.get('name')}** (Current Gross: ₹{picked_emp.get('gross_salary', 0):,.0f} &bull; DOJ: {picked_emp.get('doj')})")
+
+        def_inc_id = picked_emp.get("punch_id", picked_emp.get("emp_id", "EMP-1088")) if picked_emp else "EMP-1088"
+        def_inc_name = picked_emp.get("name", "AVDHESH KUMAR SHUKLA") if picked_emp else "AVDHESH KUMAR SHUKLA"
+        def_inc_desig = picked_emp.get("designation", "Senior Plant Operator") if picked_emp else "Senior Plant Operator"
+        def_inc_dept = picked_emp.get("department", "Operations / Mechanical") if picked_emp else "Operations / Mechanical"
+        def_inc_doj = picked_emp.get("doj", "15-03-2024") if picked_emp else "15-03-2024"
+        def_inc_curr_sal = float(picked_emp.get("gross_salary", 22000.0)) if picked_emp else 22000.0
+
         st.markdown("#### 📋 Fill Employee Appraisal & Revision Details")
         c1, c2 = st.columns(2)
 
         with c1:
             ref_no = st.text_input("Reference No.", value=f"AIPL/HR/INC/{datetime.today().year}/012", key="inc_ref")
             letter_date = st.text_input("Letter Issue Date (DD-MM-YYYY)", value=datetime.today().strftime('%d-%m-%Y'), key="inc_date")
-            emp_name = st.text_input("Employee Full Name", value="AVDHESH KUMAR SHUKLA", key="inc_name")
-            emp_id = st.text_input("Employee Code / ID", value="EMP-1088", key="inc_id")
-            designation = st.text_input("Designation", value="Senior Plant Operator", key="inc_desig")
-            department = st.text_input("Department", value="Operations / Mechanical", key="inc_dept")
+            emp_name = st.text_input("Employee Full Name", value=def_inc_name, key="inc_name")
+            emp_id = st.text_input("Employee Code / ID", value=def_inc_id, key="inc_id")
+            designation = st.text_input("Designation", value=def_inc_desig, key="inc_desig")
+            department = st.text_input("Department", value=def_inc_dept, key="inc_dept")
 
         with c2:
-            doj = st.text_input("Date of Joining (DOJ: DD-MM-YYYY)", value="15-03-2024", key="inc_doj")
+            doj = st.text_input("Date of Joining (DOJ: DD-MM-YYYY)", value=def_inc_doj, key="inc_doj")
             effective_date = st.text_input("Increment Effective Date", value="01-11-2026", key="inc_eff_date")
             
             # Auto-calculate service length: formula from DOJ to Letter Issue Date
@@ -161,7 +136,7 @@ def render(selected_site):
                 key="inc_len_service"
             )
 
-            curr_sal = st.number_input("Current Monthly Gross Salary (₹)", min_value=0.0, value=22000.0, step=500.0, key="inc_curr_sal")
+            curr_sal = st.number_input("Current Monthly Gross Salary (₹)", min_value=0.0, value=def_inc_curr_sal, step=500.0, key="inc_curr_sal")
             default_rev = max(float(curr_sal), 25500.0)
             rev_sal = st.number_input("Revised Monthly Gross Salary (₹)", min_value=0.0, value=default_rev, step=500.0, key="inc_rev_sal")
 
@@ -276,6 +251,12 @@ This is a system-generated salary revision letter and does not require a physica
             st.caption("Includes official company artwork & top header banner.")
             if st.button("⚙️ Generate PDF (With Letterhead)", key="btn_s_inc_pdf_lh", type="primary", use_container_width=True):
                 with st.spinner("Generating 1-page Letterhead PDF..."):
+                    # Auto-update revised salary in Central Master
+                    update_employee_salary(emp_id, rev_sal, {
+                        "hike_percent": inc_pct,
+                        "letter_date": letter_date,
+                        "effective_date": effective_date
+                    })
                     pdf_buf = generate_increment_pdf(data, with_letterhead=True)
                     st.session_state['s_inc_pdf_lh_bytes'] = pdf_buf.getvalue()
                     st.session_state['s_inc_pdf_lh_name'] = f"Increment_{emp_id}_{emp_name.replace(' ', '_')}_With_LH.pdf"
@@ -288,7 +269,7 @@ This is a system-generated salary revision letter and does not require a physica
                         pdf_doc.close()
                     except Exception:
                         pass
-                    st.success("✅ Letterhead PDF ready!")
+                    st.success(f"✅ Letterhead PDF ready & revised salary (₹{rev_sal:,.0f}) auto-updated in Central Master!")
 
             if st.session_state.get('s_inc_pdf_lh_bytes'):
                 st.download_button(

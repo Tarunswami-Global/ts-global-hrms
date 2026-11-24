@@ -4,7 +4,7 @@
     "password_hash": "d75435793730245abf04105f7ae5803580d23952f350fbd878a8796ed14a07f6",
     "full_name": "Tarun Swami",
     "role": "super_admin",
-    "role_title": "Super Administrator & MD",
+    "role_title": "TS Global Founder & Master Admin",
     "email": "tarun@aaikrupainfra.com",
     "active": true,
     "allowed_sites": [
@@ -63,5 +63,18 @@
       "ALL"
     ],
     "created_at": "2026-11-23 12:00:00"
+  },
+  "director": {
+    "username": "director",
+    "password_hash": "404bb9fca3d87f821cc5ae1d7a0a2e048169bdc6aae72e6b1074e8ef67052475",
+    "full_name": "Karman Gadhvi",
+    "role": "super_admin",
+    "role_title": "Director — Aaikrupa Infratech Pvt. Ltd.",
+    "email": "director@aaikrupainfra.com",
+    "active": true,
+    "allowed_sites": [
+      "ALL"
+    ],
+    "created_at": "2026-11-23 18:59:17"
   }
 }

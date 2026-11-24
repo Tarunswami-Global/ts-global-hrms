@@ -31,7 +31,8 @@ st.markdown('<div class="fixed-bg-watermark"></div>', unsafe_allow_html=True)
 # 4. Load Persistent Enterprise Settings
 settings = load_settings()
 establishment_name = settings.get('establishment_name', "AAIKRUPA INFRATECH PVT. LTD.")
-owner_name = settings.get('signatory_name', "Tarun Swami")
+owner_name = settings.get('system_owner', "Tarun Swami (TS Global)")
+director_name = settings.get('signatory_name', "Karman Gadhvi")
 sites_list = settings.get('sites', [
     "M/S. MUNDRA PETROCHEM LIMITED (Mundra)",
     "ANIL Project Site",
@@ -249,4 +250,4 @@ else:
     st.warning("The selected module interface is active.")
 
 st.markdown("---")
-st.markdown(f"<p style='text-align: center; color: #64748B; font-size: 12.5px;'>TS Global HR Automation Suite &bull; Enterprise HRMS &copy; 2026 | Developed for {establishment_name} | Owner: {owner_name}</p>", unsafe_allow_html=True)
+st.markdown(f"<p style='text-align: center; color: #64748B; font-size: 12.5px;'>TS Global HRMS Terminal &bull; Enterprise HRMS &copy; 2026 | Suite Owner: <b>{owner_name}</b> | Client: <b>{establishment_name}</b> (Director: <b>{director_name}</b>)</p>", unsafe_allow_html=True)

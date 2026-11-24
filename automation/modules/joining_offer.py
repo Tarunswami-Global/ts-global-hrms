@@ -5,6 +5,8 @@ import textwrap
 import pandas as pd
 from datetime import datetime, timedelta
 from automation.config import load_settings, has_permission, render_permission_guard
+from automation.utils.ui_components import render_entity_site_selector
+from automation.utils.employee_master import upsert_candidate_offer
 from automation.utils.letter_generators import (
     generate_joining_offer_docx,
     generate_joining_offer_pdf,
@@ -18,64 +20,28 @@ from automation.utils.letter_generators import (
 )
 
 def render(selected_site):
-    settings = load_settings()
-    default_est = settings.get('establishment_name', "AAIKRUPA INFRATECH PVT. LTD.")
-    default_addr = settings.get('company_address', "Shop No. 18, Ashok Vatika, Dhrab, Mundra, Kutch, Gujarat - 370421")
-    sig_name = settings.get('signatory_name', "Tarun Swami")
-    sig_title = settings.get('signatory_title', "Authorized Signatory / Managing Director")
-
     st.subheader("🤝 Official Offer of Employment & Salary Annexure-A Generator")
     st.markdown(
         "<p style='color:#64748B; font-size:13px; margin-top:-10px;'>"
         "Tri-Directional Salary Calculator (Gross ⇄ In-Hand ⇄ Annual CTC) • Strict 3-Page A4 Geometry • "
-        "Multi-Company & Project Site Support • Dual Letterhead Modes"
+        "Central Master Lifecycle Connected • Dual Letterhead Modes"
         "</p>",
         unsafe_allow_html=True
     )
 
     # =========================================================================
-    # GLOBAL SETTINGS: COMPANY & SITE SELECTION
+    # GLOBAL SETTINGS: COMPANY & SITE SELECTION (UNIFIED MASTER SELECTOR)
     # =========================================================================
-    st.markdown("### 🏢 Company & Work Site Configuration")
-    cfg_c1, cfg_c2 = st.columns(2)
-
-    with cfg_c1:
-        comp_choice = st.selectbox(
-            "Select Issuing Company Entity",
-            [
-                "AAIKRUPA INFRATECH PVT. LTD.",
-                "ASHAPURA INFRATECH",
-                "ASHAPURA ENTERPRISE",
-                "➕ Custom Company Name"
-            ],
-            index=0,
-            key="offer_comp_choice"
-        )
-        if comp_choice == "➕ Custom Company Name":
-            est_name = st.text_input("Enter Company Full Name", value="ASHAPURA INFRATECH", key="offer_custom_comp")
-        else:
-            est_name = comp_choice
-
-        comp_addr = st.text_input("Company Address (For Header / Notice)", value=default_addr, key="offer_comp_addr")
-
-    with cfg_c2:
-        site_choice = st.selectbox(
-            "Select Operating Project Site / Location",
-            [
-                "M/S. MUNDRA PETROCHEM LIMITED (MPL Piping 250)",
-                "M/S. MUNDRA PETROCHEM LIMITED (MPL Struct 250)",
-                "ADANI NEW INDUSTRIES LTD. (ANIL Project Site)",
-                "TATA PROJECTS / LINDE INDIA SITE",
-                "CENTRAL FABRICATION YARD (Mundra)",
-                "➕ Custom Site / Work Location"
-            ],
-            index=0 if "MUNDRA" in selected_site.upper() else 2,
-            key="offer_site_choice"
-        )
-        if site_choice == "➕ Custom Site / Work Location":
-            site_loc = st.text_input("Enter Work Site / Location", value=selected_site, key="offer_custom_site")
-        else:
-            site_loc = site_choice
+    sel_config = render_entity_site_selector(key_prefix="offer", selected_site_default=selected_site)
+    est_name = sel_config["company_name"]
+    comp_addr = sel_config["company_address"]
+    sig_name = sel_config["signatory_name"]
+    sig_title = sel_config["signatory_title"]
+    site_loc = sel_config["site_location"]
+    selected_site_code = sel_config["site_code"]
+    entity_id = sel_config["entity_id"]
+    client_id = sel_config["client_id"]
+    po_no = sel_config["po_no"]
 
     st.markdown("---")
 
@@ -319,6 +285,31 @@ Signature: __________________<br/>
 </div>
 </div>"""
             st.markdown(preview_html, unsafe_allow_html=True)
+
+        # Central Employee Master Auto-Sync
+        c_m_col1, c_m_col2 = st.columns([1.6, 1])
+        with c_m_col1:
+            if st.button("💾 Save Candidate to Central Master (Status: Offered)", key="btn_save_offer_master", type="secondary", use_container_width=True):
+                c_id = upsert_candidate_offer({
+                    "candidate_name": c_name,
+                    "designation": designation,
+                    "department": department,
+                    "emp_code": emp_id,
+                    "doj": doj,
+                    "gross_salary": brk['gross'],
+                    "annual_ctc": brk['annual_ctc'],
+                    "net_inhand": brk['in_hand'],
+                    "entity_id": entity_id,
+                    "client_id": client_id,
+                    "site_code": selected_site_code,
+                    "site_location": site_loc,
+                    "po_no": po_no,
+                    "reporting_to": rep_to,
+                    "offer_date": letter_date
+                })
+                st.success(f"✅ Candidate **'{c_name}'** saved to Central Master (`{c_id}`, Status: **Offered**)! Ready for 1-click Appointment conversion.")
+        with c_m_col2:
+            st.caption(f"⚡ Linked Site: **{selected_site_code}** &bull; Available Headroom: **+{sel_config['headroom']}** slots")
 
         st.markdown("### 📥 Generate & Download Joining Offer Letter")
         if not has_permission("can_issue_offer_letters"):

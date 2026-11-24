@@ -1,14 +1,20 @@
 import streamlit as st
-from automation.config import load_settings, has_permission
+from automation.config import load_settings, has_permission, load_master_registry
 
 def render(selected_site):
     settings = load_settings()
+    reg = load_master_registry()
     est_name = settings.get('establishment_name', "AAIKRUPA INFRATECH PVT. LTD.")
     principal_emp = settings.get('principal_employer', "M/S. MUNDRA PETROCHEM LIMITED, MUNDRA, KACHCHH")
     license_no = settings.get('license_no', "1199597230")
-    signatory = settings.get('signatory_name', "Tarun Swami")
+    signatory = settings.get('signatory_name', "Karman Gadhvi")
     sites = settings.get('sites', [])
     current_user = st.session_state.get('username', 'Admin').upper()
+
+    sites_dict = reg.get('sites', {})
+    total_workers = sum(s.get('active_headcount', 0) for s in sites_dict.values()) if sites_dict else 651
+    total_cap = sum(s.get('labour_cap', 0) for s in sites_dict.values()) if sites_dict else 750
+    cap_util_pct = round((total_workers / total_cap * 100), 1) if total_cap > 0 else 0
 
     # Dashboard Main Title (Oilforce Solutions Style)
     st.markdown(f"""
@@ -73,8 +79,8 @@ def render(selected_site):
                         ACTIVE MANPOWER
                     </span>
                 </div>
-                <h2 style="margin: 4px 0 2px 0; font-size: 28px; font-weight: 800; color: #0F172A;">900</h2>
-                <div style="font-size: 11.5px; font-weight: 600; color: #10B981; margin-top: 4px;">▲ 100% Labour Cap Utilized</div>
+                <h2 style="margin: 4px 0 2px 0; font-size: 28px; font-weight: 800; color: #0F172A;">{total_workers}</h2>
+                <div style="font-size: 11.5px; font-weight: 600; color: #10B981; margin-top: 4px;">▲ Cap: {total_cap} ({cap_util_pct}% Utilized)</div>
             </div>
         """, unsafe_allow_html=True)
     with k3:

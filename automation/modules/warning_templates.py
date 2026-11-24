@@ -1,35 +1,59 @@
 import streamlit as st
 from datetime import datetime
 from automation.config import load_settings, has_permission, render_permission_guard
+from automation.utils.ui_components import render_entity_site_selector, render_employee_selector_widget
+from automation.utils.employee_master import record_employee_warning
 from automation.utils.letter_generators import (
     generate_warning_docx, generate_warning_pdf
 )
 
 def render(selected_site):
-    settings = load_settings()
-    est_name = settings.get('establishment_name', "AAIKRUPA INFRATECH PVT. LTD.")
-    comp_addr = settings.get('company_address', "Mundra-Kachchh Highway, Mundra, Gujarat - 370421")
-    sig_name = settings.get('signatory_name', "Tarun Swami")
-    sig_title = settings.get('signatory_title', "Authorized Signatory / Managing Director")
-
     st.subheader(f"⚠️ Disciplinary & Warning Notice Generator (Site: {selected_site})")
 
+    # Unified Master Selector
+    sel_config = render_entity_site_selector(key_prefix="warn", selected_site_default=selected_site)
+    est_name = sel_config["company_name"]
+    comp_addr = sel_config["company_address"]
+    sig_name = sel_config["signatory_name"]
+    sig_title = sel_config["signatory_title"]
+    site_loc = sel_config["site_location"]
+
+    st.markdown("---")
     st.markdown("### 📋 Fill Disciplinary / Warning Notice Details")
     
+    # Fast-Fill Correlation from Employee Master
+    picked_emp = render_employee_selector_widget(filter_status=["active", "confirmed"], key_prefix="warn")
+    existing_warn_count = 0
+    if picked_emp:
+        existing_warns = picked_emp.get("warnings", [])
+        existing_warn_count = len(existing_warns)
+        if existing_warn_count >= 2:
+            st.error(f"🚨 **CRITICAL NOTICE:** Worker **{picked_emp.get('name')}** already has **{existing_warn_count} prior warnings** on record! System recommends escalating to **FINAL SHOW-CAUSE NOTICE**.")
+        elif existing_warn_count == 1:
+            st.warning(f"⚠️ Worker **{picked_emp.get('name')}** has **1 previous warning** on record. Issuing a Second Written Warning.")
+        else:
+            st.info(f"⚡ Loaded worker: **{picked_emp.get('name')}** (Clean disciplinary record: 0 warnings).")
+
+    def_warn_id = picked_emp.get("punch_id", picked_emp.get("emp_id", "EMP-1102")) if picked_emp else "EMP-1102"
+    def_warn_name = picked_emp.get("name", "SANJAY M. PARMAR") if picked_emp else "SANJAY M. PARMAR"
+    def_warn_desig = picked_emp.get("designation", "Site Welder / Fabricator") if picked_emp else "Site Welder / Fabricator"
+
+    def_level_idx = 2 if existing_warn_count >= 2 else (1 if existing_warn_count == 1 else 0)
+
     c1, c2 = st.columns(2)
     with c1:
         ref_no = st.text_input("Notice Ref No.", value=f"AIPL/HR/WARN/{datetime.today().year}/019", key="warn_ref_no")
         letter_date = st.text_input("Notice Date", value=datetime.today().strftime('%d-%m-%Y'), key="warn_date")
-        emp_name = st.text_input("Employee Full Name", value="SANJAY M. PARMAR", key="warn_name")
-        emp_id = st.text_input("Employee ID / Code", value="EMP-1102", key="warn_id")
-        designation = st.text_input("Designation", value="Site Welder / Fabricator", key="warn_desig")
+        emp_name = st.text_input("Employee Full Name", value=def_warn_name, key="warn_name")
+        emp_id = st.text_input("Employee ID / Code", value=def_warn_id, key="warn_id")
+        designation = st.text_input("Designation", value=def_warn_desig, key="warn_desig")
 
     with c2:
-        site_loc = st.text_input("Operating Site", value=selected_site, key="warn_site")
+        site_input = st.text_input("Operating Site", value=site_loc, key="warn_site")
         warning_level = st.selectbox(
             "Notice Severity Level",
             ["FIRST WRITTEN WARNING", "SECOND WRITTEN WARNING", "FINAL SHOW-CAUSE NOTICE", "SAFETY VIOLATION MEMO"],
-            index=0,
+            index=def_level_idx,
             key="warn_level"
         )
         violation_type = st.selectbox(
@@ -121,10 +145,11 @@ def render(selected_site):
         b1, b2 = st.columns(2)
         with b1:
             if st.button("⚙️ Generate Word (.docx)", key="btn_warn_docx", type="primary", use_container_width=True):
+                new_tot = record_employee_warning(emp_id, warn_data)
                 docx_buf = generate_warning_docx(warn_data)
                 st.session_state['warn_docx_bytes'] = docx_buf.getvalue()
                 st.session_state['warn_docx_name'] = f"Warning_{emp_name.replace(' ', '_')}.docx"
-                st.success("✅ Word document generated!")
+                st.success(f"✅ Word notice generated & logged against employee record in Central Master (Total warnings on record: {new_tot})!")
 
             if st.session_state.get('warn_docx_bytes'):
                 st.download_button(
@@ -137,10 +162,11 @@ def render(selected_site):
 
         with b2:
             if st.button("⚙️ Generate A4 PDF (.pdf)", key="btn_warn_pdf", type="primary", use_container_width=True):
+                new_tot = record_employee_warning(emp_id, warn_data)
                 pdf_buf = generate_warning_pdf(warn_data)
                 st.session_state['warn_pdf_bytes'] = pdf_buf.getvalue()
                 st.session_state['warn_pdf_name'] = f"Warning_{emp_name.replace(' ', '_')}.pdf"
-                st.success("✅ PDF document generated!")
+                st.success(f"✅ PDF notice generated & logged against employee record in Central Master (Total warnings on record: {new_tot})!")
 
             if st.session_state.get('warn_pdf_bytes'):
                 st.download_button(
